@@ -5,6 +5,7 @@
    <!--
     body { font-family: Verdana, arial, helvetica, sans-serif; font-size: 12px; }
     td   { font-family: Verdana, arial, helvetica, sans-serif; font-size: 12px; }
+			.ICAOField { background-color: #ececec; border: 1px solid;}; font-family: verdana; font-size: 12pt; color: #000000; font-weight: bold;}
    -->
   </style>
  	<script language="javascript"  type="text/javascript">
@@ -73,7 +74,11 @@
 	</table>
 <table border=0 cellpadding="0" cellspacing="0" width=530 height=100>
  <tr>
-  <td valign="bottom"><font size=12><a href="javascript:READY('1');">DONE</a></font>
+  <td align="right" valign="bottom">
+
+	<input  class="ICAOField" type="submit" onclick="READY('1'); return false" name="" value="Next -->">
+
+
 	</td>
  </tr>
 </table>

@@ -32,7 +32,8 @@ mapping File_Server_Parsed(string file,string query,string tpl,mapping ini,strin
 
 	if(query !="") { foreach(query/"&",string t) { array t1=t/"="; vals["QUERY{"+t1[0]+"}"]=t1[1]; } } /* Query Parser */
 
-  foreach(indices(vals),string l ) { string t1=  "%"+l+"%"; string t2=  vals[l]; in = replace(in,t1,  t2); } /* repace %query% */
+  foreach(indices(vals),string l ) { string t1=  "%"+l+"%"; string t2=  vals[l]; in = replace(in,t1,  t2);  } /* repace %query% */
+  foreach(indices(ini),string l ) { string t1=  "%"+l+"%"; string t2=  ini[l]; in = replace(in,(string)t1, (string) t2); } /* repace %query% */
 
 	if(ini->DEMO == "YES")/* DEMO MODE ? */
 	{
@@ -47,12 +48,31 @@ mapping File_Server_Parsed(string file,string query,string tpl,mapping ini,strin
 
 	{
 		mapping Aircrafts = Load_AC_DataBase();
-		string acs;
-  	foreach(indices(Aircrafts),string l )
+		string acs ="";
+		string acsJS ="";
+		string onLoad ="";
+		string tmp ="";
+		foreach(indices(Aircrafts),string l )
   	{
-   		acs += sprintf("<option value=\"%s\">%s (%s)</option>",(string)l,(string)l,(string)Aircrafts[l]->TYPE);
+		if(onLoad =="") onLoad = l;
+
+			acs += sprintf("<option value=\"%s\">%s (%s)</option>",(string)l,(string)l,(string)Aircrafts[l]->TYPE);
+			tmp = "document.SendToR.AC_REG.value = \""+(string)l+"\";\n";
+			foreach(indices(Aircrafts[l]),string key )
+  		{
+
+			tmp += "document.SendToR.AC_"+key+".value = \""+Aircrafts[l][key]+ "\";\n";
+			}
+			acsJS +=  "if(reg == \""+(string)l+"\"){ "+tmp+" }\n";
+			
+
+
   	}
+
 		in = replace(in,"{AC-LIST}",acs);
+		in = replace(in,"{AC-JS}",acsJS);
+		in = replace(in,"%FIRST-AC-IN-LIST%",onLoad);
+		in = replace(in,"%VERSION%",Stdio.FILE("version.txt")->read());
 	}
 
 	mapping ret = (["data" : in ,"type" : ini["CT-"+upper_case(file_type)], "server": VERSION  ]);
@@ -130,17 +150,17 @@ return ret;
 
 mapping show_log(string sess)
 {
-	string redirect = sprintf("<html><head><script language=\"javascript\" type=\"text/javascript\">function go(){top.location.href=\"/KLICK_%s.fnp\";}</script></head><body OnLoad=\"go();\"></html>",sess);
+
 	sess =combine_path(ini->SESSIONDIR,sess+".log");
 	string log ="";
 	if(Stdio.exist(sess))  log = Stdio.FILE(sess)->read();
-	if(log =="DONE") return (["data": redirect, "type": "text/html"]);
-	return (["data": log, "type": "text/plain"]);
+	log = "<pre>\n"+log+"</pre><a name=unten>\n";
+	return (["data": log, "type": "text/html"]);
 }
 
 string Push_Log(string sess,string log)
 {
-	log =sprintf("[%s]\t %s\n",time_now()->time,log);
+	log =sprintf("[%s]\t %s \n",time_now()->time,log);
 	sess =combine_path(ini->SESSIONDIR,sess+".log");
 	Stdio.append_file(sess,log);
 }
@@ -148,7 +168,7 @@ string Push_Log(string sess,string log)
 
 string Push_Log_Done(string sess)
 {
-	string log ="DONE";
+	string log = sprintf("<html><head><script language=\"javascript\" type=\"text/javascript\">function go(){top.location.href=\"/KLICK_%s.fnp\";}</script></head><body OnLoad=\"go();\"></html>",sess);
 	sess =combine_path(ini->SESSIONDIR,sess+".log");
 	Stdio.write_file(sess,log);
 return 0;
@@ -225,7 +245,7 @@ return ret;
 
 string Get_Runways_Html(string id ,mapping rwy)
 {
-debug("rwy call with"+id);
+
 mapping sur = RWY_SUR();
 	string ret ="";
 	foreach(indices(rwy), string l)

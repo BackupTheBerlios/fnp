@@ -43,9 +43,7 @@ void  handle_request(Protocols.HTTP.Server.Request request)
   if(ini->ACCESS == "local" && ip_arr[0] == "192" && ip_arr[0] == "168" ) access ="YES";
   if( access =="NO")
 	{
-  	write("! BLOCKED ->");
-
-  	request->response_and_finish(([ "data": "Authentication failed.", "type" : "text/html" ]));
+    	request->response_and_finish(([ "data": "Authentication failed.", "type" : "text/html" ]));
 	}
   if( access =="YES")
 	{
@@ -56,12 +54,14 @@ void  handle_request(Protocols.HTTP.Server.Request request)
 		case "/"		: /* startpage (index.html :-) */
 									ret = File_Server_Parsed(ini->STARTPAGE,request->query,"STARTPAGE",ini,"html");
 									done =1;
+									debug(sprintf("[%s %s] STARTPAGE %s -> %s\n",time_now()->date,time_now()->time,ip,request->not_query));
 									break;
 
 		case "/R/"	: /*Start New Route*/
 									mapping FNP =Start_FNP(query,ini);
 									ret = (["data" : FNP->data, "type" : "text/html" ]);
 									done =1;
+									debug(sprintf("[%s %s] START ROUTER %s -> %s\n",time_now()->date,time_now()->time,ip,request->not_query));
 									break;
 
 		}
@@ -71,6 +71,7 @@ void  handle_request(Protocols.HTTP.Server.Request request)
 			mapping Start_FNP_Holding =Start_FNP_Holding(file,ini);
 			ret = (["data" : Start_FNP_Holding->data, "type" : "text/html" ]);
 			done =1;
+				debug(sprintf("[%s %s] PROCESS ROUTE %s -> %s\n",time_now()->date,time_now()->time,ip,request->not_query));
 		}
 		if(file[0..4] == "/LOG_") /* Logfile Process */
 		{
@@ -82,11 +83,12 @@ void  handle_request(Protocols.HTTP.Server.Request request)
 		if(file[0..5] == "/CALL_") /* Call Process */
 		{
 		string sess = replace(file,"/CALL_","");
-		debug("Kick Router with session:"+sess);
+
 		object t =Thread.thread_create( lambda() {FNP_Route(sess,ini); } );
 
 		ret = (["data" : "0", "type" : "text/plain" ]);
 		done =1;
+		debug(sprintf("[%s %s] CALL %s -> %s\n",time_now()->date,time_now()->time,ip,request->not_query));
 		}
 
 		if(file[0..5] == "/PLAN_") /* PlanPages Process */
@@ -98,6 +100,7 @@ void  handle_request(Protocols.HTTP.Server.Request request)
 		if(file_ext[1] == "map") ret = (["data" : ServPlanFilePass(file,ini), "type" : "image/jpeg"  ]);
 
 		done =1;
+		debug(sprintf("[%s %s] PLAN %s -> %s\n",time_now()->date,time_now()->time,ip,request->not_query));
 		}
 
 		if(file[0..6] == "/KLICK_") /* PlanPages Process */
@@ -105,8 +108,8 @@ void  handle_request(Protocols.HTTP.Server.Request request)
 		 file = replace(file,"/KLICK_","");
 		if(file_ext[1] == "fnp") ret = (["data" : FNP_KLick_Route(file,request->variables,ini), "type" : "text/html"  ]);
 		if(file_ext[1] == "jpg") ret = (["data" : FNP_KLick_Route_Map(file,ini), "type" : "image/jpeg"  ]);
-
 		done =1;
+		debug(sprintf("[%s %s] KLICKER %s -> %s\n",time_now()->date,time_now()->time,ip,request->not_query));
 		}
 
 
@@ -121,6 +124,7 @@ void  handle_request(Protocols.HTTP.Server.Request request)
   		case "css"	:	ret = File_Server_Parsed(file,request->query,0,ini,"css"	);	break;
   		case "js"		:	ret = File_Server_Parsed(file,request->query,0,ini,"js"		);	break;
 			}
+			debug(sprintf("[%s %s] FILESERVER %s -> %s\n",time_now()->date,time_now()->time,ip,request->not_query));
 		}
 
 
@@ -128,11 +132,9 @@ void  handle_request(Protocols.HTTP.Server.Request request)
 
 		if(ret->data)  request->response_and_finish(([ "data": ret->data, "type":ret->type, "server": ret->server ]));
 		if(!ret->data) request->response_and_finish(([ "data": "404?"+file, "type":"text/html" ]));
+
 	} /* end access */
 }
-
-
-
 
 
 

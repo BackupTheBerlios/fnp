@@ -88,7 +88,7 @@
 	</tr>
 </table>
 
-<span id="MoreOptions" style="display:inline;">
+<span id="MoreOptions" style="display:none;">
 <br>
 <div class="SectionHeader">Aircraft Data</div>
 <table border =0  cellspacing="0" cellpadding="1">

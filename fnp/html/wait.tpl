@@ -15,6 +15,6 @@ function reloadmoep() {  parent.frames['LogFrame'].location.reload(); window.set
 <br><br><br><font size="10" >PLEASE WAIT</font>
 <br><font size="2" >Session ID: %SESS%</font>
 <br><br><br><img src="/CALL_%SESS%?id=" width=0 height=0 border=0/>
-<iframe width="480" name="LogFrame" height="300" src="/LOG_%SESS%" frameborder="0" SCROLLING="YES"></iframe>
+<iframe width="480" name="LogFrame" height="300" src="/LOG_%SESS%#unten" frameborder="0" SCROLLING="YES"></iframe>
 
 </body>
