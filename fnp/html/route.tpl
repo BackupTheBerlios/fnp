@@ -9,8 +9,17 @@
   </style>
  </head>
  <body bgcolor="#FFFFFF" text="#000000" link="blue" vlink="red" alink="red" leftmargin=5 topmargin=5 marginheight="5" marginwidth="5">
-         
- <br>
+ <table border=0 cellpadding="0" cellspacing="0" width=100%>
+ <tr><td valign=top><br><br>
+  <a href="/">NEW</a><br><br>
+  <a href="http://fnp.berlios.de/">FNP HOME</a><br><br>
+  <a href="http://fnp.berlios.de/forum/list.php?f=1">FNP FORUM</a><br><br>
+  <a href="http://developer.berlios.de/docman/?group_id=1305">Documentation</a><br><br>
+ </td>
+ <td bgcolor=#999999>&nbsp;</td>
+ <td >
+
+
   <center><font face=Verdana size=4 color=#999999><u>%ICAO1% (%NAME1%) - %ICAO2% (%NAME2%)</u></font><br />
    <font face=Verdana size=3 color=#999999>%AC-REG% / %AC-TYPE% <br>
   
@@ -36,7 +45,7 @@
      <tr><td>True Course</td><td> %HEADING%</td></tr>
      <tr><td>Ground  Speed</td><td>%GS% NM</td></tr>
      <tr><td>True Air Speed</td><td> %AC-TAS% NM</td></tr>
-     
+
      <tr><td>%FLIGHTTIME%</td><td>Min. Flight Time</td></tr>
     </table>
 
@@ -67,7 +76,10 @@
     {IMGMAP}
     </map>
    
-    <img src="/RVSC_MAP/?from=%ICAO1%&to=%ICAO2%" width="330" height="448" border="1" alt="Karte" usemap="#maphits"> 
+    <img src="/RVSC_MAP/?from=%ICAO1%&to=%ICAO2%" width="330" height="448" border="1" alt="Karte" usemap="#maphits">
+	<br><font face=Verdana size=3 color=#000000>
+	move the mouse over the map!
+
    </td>
   </tr>
  </table>
@@ -114,7 +126,11 @@
   <tr>
    <td><iframe width="600" height="80" src="http://weather.noaa.gov/pub/data/forecasts/taf/stations/%ICAO2%.TXT" frameborder="0" SCROLLING="YES"></iframe></td>
   </tr>
-</table> 
+</table>
+
+</td><td bgcolor=#999999>&nbsp;</td>
+</tr>
+</table>
 
   
 
