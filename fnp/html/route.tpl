@@ -73,7 +73,7 @@
 	</table><br>
 	</td></tr></table>
 
-	<br><br><br>TEST:
+	<br><br><br>TEST: ( Wind %INI_WS%kt %INI_WD%° )
 
 	<table border=1 cellpadding="2" cellspacing="2">
 	<tr><td>#</td><td>IDENT</td><td>DIST</td><td>TT</td><td>WCA</td><td>VAR</td><td>MT</td><td>TAS</td><td>GS</td><td>int TIME</td></tr>

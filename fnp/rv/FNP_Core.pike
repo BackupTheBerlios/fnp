@@ -375,7 +375,7 @@ array time_tmp1 = ({ total_time /60, total_time %60});
 		if(route[i]->hop != 0) {tmp += "<tr><td>"+(route[i]->hop-1)+
 		"</td><td>"+route[i]->ident+"</td><td>"+dist+
 		"</td><td>"+(int)tc+"°</td><td>"+(int)wca+
-		"°</td><td>"+ini->VAR+"</td><td>TT</td><td>"+ini->TAS+
+		"°</td><td>"+ini->VAR+"</td><td>TT</td><td>"+output["T_AC-TAS"]+
 		"</td><td>"+gs+"</td><td>"+total_time_f+"</td></tr>\n";
 		}
 		}
