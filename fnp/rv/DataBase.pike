@@ -136,3 +136,56 @@ mapping OpenDatabase_WPT()
  }
 return db;
 }
+
+
+mapping OpenDatabase_RWY()
+{
+ array fx = (Gz.File("db/rwy","rb")->read())/"\n";
+ mapping db=([]);
+ foreach(fx,string l)
+  {
+   array x = l/"|";
+	 if(sizeof(l) >20)
+   {
+	 	 db[x[1]+"_"+x[2]] +=([
+		 	"ID": 			replace(replace(x[1]	,"\n",""),"\r",""),
+			"RWY":			replace(replace(x[2]	,"\n",""),"\r",""),
+     	"LENGHT": 	replace(replace(x[3]	,"\n",""),"\r",""),
+     	"WIDHT": 		replace(replace(x[4]	,"\n",""),"\r",""),
+     	"SURFACE":	replace(replace(x[5]	,"\n",""),"\r","")
+			]);
+	}
+ }
+return db;
+}
+
+
+
+mapping RWY_SUR()
+{
+
+mapping x =([
+	"ASP": "ASPHALT, ASPHALTIC CONCRETE, MACADAM, OR BITUMEN BOUND MACADAM (INCLUDING ANY OF THESE SURFACE TYPES WITH CONCRETE ENDS)",
+	"BIT": "BITUMINOUR, TAR OR ASPHALT MIXED IN PLACE, OILED",
+	"CLA": "CLAY",
+	"COM": "COMPOSITE, LESS THAN 50 PERCENT OF THE RUNWAY LENGTH IS PERMANENT",
+	"CON": "CONCRETE",
+	"COP": "COMPOSITE, 50 PERCENT OR MORE OF THE RUNWAY LENGTH IS PERMANENT",
+	"COR": "CORAL",
+	"GRE": "GRADED OR ROLLED EARTH, GRASS ON GRADED EARTH",
+	"GRS": "GRASS OR EARTH NOT GRADED OR ROLLED",
+	"GVL": "GRAVEL",
+	"ICE": "ICE",
+	"LAT": "LATERITE",
+	"MAC": "MACADAM - CRUSHED ROCK WATER BOUND",
+	"MEM": "MEMBRANE - PLASTIC OR OTHER COATED FIBER MATERIAL",
+	"MIX": "MIX IN PLACE USING NONBITUMIOUS BINDERS SUCH AS PORTLAND CEMENT",
+	"PEM": "PART CONCRETE, PART ASPHALT, OR PART BITUMEN-BOUND MACADAM",
+	"PER": "PERMANENT, SURFACE TYPE UNKNOWN",
+	"PSP": "PIECED STEEL PLANKING",
+	"SAN": "SAND, GRADED, ROLLED OR OILED",
+	"SNO": "SNOW",
+	"U"	 : "SURFACE UNKNOWN"]);
+return x;
+}
+
