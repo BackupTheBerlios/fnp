@@ -32,6 +32,7 @@ void  handle_request(Protocols.HTTP.Server.Request request)
   array file_ext = request->not_query/".";
 
   /*CHECK CONNECT PERMISSIONS*/
+
   array  tmp_ip = sprintf("%O",request->my_fd)/" ";
   string ip =  replace(tmp_ip[1],"\"","");
   array  ip_arr = ip/".";
@@ -43,6 +44,7 @@ void  handle_request(Protocols.HTTP.Server.Request request)
   if( access =="NO")
 	{
   	write("! BLOCKED ->");
+
   	request->response_and_finish(([ "data": "Authentication failed.", "type" : "text/html" ]));
 	}
   if( access =="YES")
@@ -80,7 +82,9 @@ void  handle_request(Protocols.HTTP.Server.Request request)
 		if(file[0..5] == "/CALL_") /* Call Process */
 		{
 		string sess = replace(file,"/CALL_","");
+		debug("Kick Router with session:"+sess);
 		object t =Thread.thread_create( lambda() {FNP_Route(sess,ini); } );
+
 		ret = (["data" : "0", "type" : "text/plain" ]);
 		done =1;
 		}
@@ -93,6 +97,17 @@ void  handle_request(Protocols.HTTP.Server.Request request)
 		if(file_ext[1] == "fnp") ret = (["data" : ServPlanFileParse(file,ini), "type" : "text/html"  ]);
 		done =1;
 		}
+
+		if(file[0..6] == "/KLICK_") /* PlanPages Process */
+		{
+		 file = replace(file,"/KLICK_","");
+		if(file_ext[1] == "fnp") ret = (["data" : FNP_KLick_Route(file,request->variables,ini), "type" : "text/html"  ]);
+		if(file_ext[1] == "jpg") ret = (["data" : FNP_KLick_Route_Map(file,ini), "type" : "image/jpeg"  ]);
+
+		done =1;
+		}
+
+
 
 		if(done != 1)
 		{

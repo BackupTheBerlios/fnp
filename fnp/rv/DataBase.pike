@@ -1,5 +1,3 @@
-
-
 mapping OpenDatabase(string f)
 
 {

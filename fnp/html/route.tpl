@@ -7,7 +7,13 @@
     td   { font-family: Verdana, arial, helvetica, sans-serif; font-size: 12px; }
    -->
   </style>
+ 	<script language="javascript"  type="text/javascript">
+		function ALT() {  var later = "later";  }
+		function NAV() {  var later = "later";  }
+		function WPT() {  var later = "later";  }
+	</script>
  </head>
+
  <body bgcolor="#FFFFFF" text="#000000" link="blue" vlink="red" alink="red" leftmargin=5 topmargin=5 marginheight="5" marginwidth="5">
  <table border=0 cellpadding="0" cellspacing="0" width=100%>
  <tr><td valign=top><br><br>
@@ -35,13 +41,13 @@
      Date/Time: %DATE% %TIME%
     <hr><b>DISTANCE:</b><br>
     <table>
-     <tr><td>nautical miles</td><td>%DIST_NM%</td></tr>
-     <tr><td>Land miles</td><td> %DIST_MI%</td></tr>
-     <tr><td>kilometers</td><td>%DIST_KM%</td> </tr>
+     <tr><td>nautical miles</td><td>%DISTNM%</td></tr>
+     <tr><td>Land miles</td><td> %DISTMI%</td></tr>
+     <tr><td>kilometers</td><td>%DISTKM%</td> </tr>
     </table>
 
     <hr><b>FLIGHTDATA:</b><br>
-    <table>    
+    <table>
      <tr><td>True Course</td><td> %HEADING%</td></tr>
      <tr><td>Ground  Speed</td><td>%GS% NM</td></tr>
      <tr><td>True Air Speed</td><td> %AC-TAS% NM</td></tr>
@@ -119,14 +125,14 @@
 <br><font color="RED">NOTE:</font> WD,WS,TAS fixed set in "settings.ini"
 <br>  <hr><br>
 <center><font face=Verdana size=4 color=#999999><u>WEATHERSTATIONS:</u></font><br> <br>
-<table border=1 cellpadding="0" cellspacing="0">
+<!-- table border=1 cellpadding="0" cellspacing="0">
   <tr>
    <td><iframe width="600" height="80" src="http://weather.noaa.gov/pub/data/forecasts/taf/stations/%ICAO1%.TXT" frameborder="0" SCROLLING="YES"></iframe></td>
   </tr>
   <tr>
    <td><iframe width="600" height="80" src="http://weather.noaa.gov/pub/data/forecasts/taf/stations/%ICAO2%.TXT" frameborder="0" SCROLLING="YES"></iframe></td>
   </tr>
-</table>
+</table -->
 
 </td><td bgcolor=#999999>&nbsp;</td>
 </tr>

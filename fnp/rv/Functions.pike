@@ -130,7 +130,7 @@ return ret;
 
 mapping show_log(string sess)
 {
-	string redirect = sprintf("<html><head><script language=\"javascript\" type=\"text/javascript\">function go(){top.location.href=\"/PLAN_%s.fnp\";}</script></head><body OnLoad=\"go();\"></html>",sess);
+	string redirect = sprintf("<html><head><script language=\"javascript\" type=\"text/javascript\">function go(){top.location.href=\"/KLICK_%s.fnp\";}</script></head><body OnLoad=\"go();\"></html>",sess);
 	sess =combine_path(ini->SESSIONDIR,sess+".log");
 	string log ="";
 	if(Stdio.exist(sess))  log = Stdio.FILE(sess)->read();
@@ -285,19 +285,16 @@ mapping waypoint(string icao, float range,mapping db,mapping wpt)
 
 mapping waypoint2(float lat,float long, float range,mapping db,mapping wpt)
 {
-
   mapping tmp=([]);
   mapping ret=([]);
 
-  foreach(indices(wpt), string l)
+	foreach(indices(wpt), string l)
   {
-
     if( (float) wpt[l]->WGS_DLONG > long - range && (float) wpt[l]->WGS_DLONG < long + range)
-    { tmp[l] +=(["WGS_DLONG": (float) wpt[l]->WGS_DLONG ]);}
+    { tmp[l] +=(["WGS_DLONG": (float) wpt[l]->WGS_DLONG ]); }
 
     if( (float) wpt[l]->WGS_DLAT > lat - range && (float) wpt[l]->WGS_DLAT < lat + range)
-    {tmp[l] +=(["WGS_DLAT": (float) wpt[l]->WGS_DLAT ]);}
-
+    { tmp[l] +=(["WGS_DLAT": (float) wpt[l]->WGS_DLAT ]); }
   }
 
  foreach(indices(tmp),string l )
@@ -321,11 +318,6 @@ mapping waypoint2(float lat,float long, float range,mapping db,mapping wpt)
   return ret;
 }
 
-
-
-
-
-
 mapping st(float lat,float long,float N,float S, float W,float O,float width,float height)
 {
     mapping pos=([]);
@@ -341,13 +333,6 @@ mapping st(float lat,float long,float N,float S, float W,float O,float width,flo
 
  return pos;
 }
-
-
-
-
-
-
-
 
 class Geo {
   class Point {

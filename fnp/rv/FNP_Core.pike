@@ -48,27 +48,28 @@ return  (["check": "ok", "data": "FERTIG", "type": ini["CT-HTML"] ]);
 
 mapping Start_FNP_Holding(string sess,mapping ini)
 {
+
 	string data = Stdio.FILE(ini->HTMLDIR+"/"+ini->WAITTPL)->read();
 	sess = replace(sess,"/FP_","");
 	data = replace(data,"%SESS%",sess);
+
+
 	return (["check": "ok", "data": data, "type": ini["CT-HTML"] ]);
 }
 
 string FNP_Route(string sess,mapping ini)
 {
-
-	mapping x = decode_value(Stdio.FILE(combine_path(ini->SESSIONDIR,sess))->read());
+	 mapping x = decode_value(Stdio.FILE(combine_path(ini->SESSIONDIR,sess))->read());
 		string from 		= (string) upper_case(x->from);
 		string to 			= (string) upper_case(x->to);
 		string ac 			= (string)x->ac;
  	 	mapping m_from 	= GetICAOdata(from,DB);
    	mapping m_to		=	GetICAOdata(to,DB);
+
 Push_Log(sess,sprintf("Processing %s -> %s with %s ",from,to,ac));
 
-
-	if(ini->DEMO == "YES") { from =ini->DEMO_F; to =ini->DEMO_T;}
+if(ini->DEMO == "YES") { from =ini->DEMO_F; to =ini->DEMO_T;}
 	mapping output=([]);
-
 
    output["T_SESSION"] 		=	(string)  sess;;
    output["T_INI_NAME"] 	=	(string)  ini->NAME;
@@ -94,14 +95,14 @@ Push_Log(sess,sprintf("Processing %s -> %s with %s ",from,to,ac));
 	 float gdist					=	a->GCDistance(b);
    float adist					=	a->ApproxDistance(b);
    float azimuth				=	a->GCAzimuth(b);
-   output["T_DIST_KM"] 		= sprintf("%.2f",gdist);
-   output["T_DIST_MI"] 		= sprintf("%.2f",gdist*0.62);
-   output["T_DIST_NM"] 		= sprintf("%.2f",gdist*0.54);
+   output["T_DISTKM"] 		= sprintf("%.2f",gdist);
+   output["T_DISTMI"] 		= sprintf("%.2f",gdist*0.62);
+   output["T_DISTNM"] 		= sprintf("%.2f",gdist*0.54);
    output["T_HEADING"] 		= sprintf("%.2f",azimuth);
    output["T_TIME"]    		= time_now()->time;
    output["T_DATE"]    		= time_now()->date;
 
-Push_Log(sess,sprintf("Distance: %s, Heading: %s",output["T_DIST_NM"],output["T_HEADING"]));
+Push_Log(sess,sprintf("Distance: %s, Heading: %s",output["T_DISTNM"],output["T_HEADING"]));
 
    float 	RAD 					= 0.01745329;
    float ALPHA 					= RAD*( 180 - ( (int) ini->WD - (int)output->HEADING) );
@@ -120,25 +121,26 @@ Push_Log(sess,sprintf("Distance: %s, Heading: %s",output["T_DIST_NM"],output["T_
 	 Push_Log(sess,sprintf("Flighttime: %s min.",output["T_FLIGHTTIME"]));
 
 
-	mapping Alt = alt(output["T_ICAO2"],1.000,DB);
+	  mapping Alt = alt(output["T_ICAO2"],1.000,DB);
 	Push_Log(sess,sprintf("Found %d Alternates for %s",sizeof(indices(Alt)),output["T_ICAO2"]));
 
 	 foreach(indices(Alt),string l) { output["Alt_"+l] =(["lat":	Alt[l]->lat, "long": Alt[l]->long, "dist":Alt[l]->dist ]); }
+
+Push_Log(sess,sprintf("Scanning Navigation Database ... "));
 
 	mapping pointer	= ([]); mapping NavID		=	([]); mapping WayPoints		=	([]);
 
 	for(int i=1;i<gdist*0.54/25;i++)
    {
-	 pointer = PosFinder(from,a->GCAzimuth(b),(float) i*25 ,DB);
+  	 pointer = PosFinder(from,a->GCAzimuth(b),(float) i*25 ,DB);
      Alt += alt2(pointer->WGS_DLAT,pointer->WGS_DLONG,0.300,DB);
-		NavID += navid2(pointer->WGS_DLAT,pointer->WGS_DLONG,0.300,DB,nav);
-		WayPoints += waypoint2(pointer->WGS_DLAT,pointer->WGS_DLONG,0.100,DB,wpt);
-
+  	 NavID += navid2(pointer->WGS_DLAT,pointer->WGS_DLONG,0.300,DB,nav);
+     WayPoints += waypoint2(pointer->WGS_DLAT,pointer->WGS_DLONG,0.100,DB,wpt);
+	Push_Log(sess,sprintf("Searching in Aera (%f %f)",pointer->WGS_DLAT,pointer->WGS_DLONG,));
   }
 		NavID += navid2((float) m_to->lat, (float) m_to->long,0.500,DB,nav);
-	WayPoints += waypoint2(pointer->WGS_DLAT,pointer->WGS_DLONG,0.100,DB,wpt);
-
-
+		WayPoints += waypoint2(pointer->WGS_DLAT,pointer->WGS_DLONG,0.100,DB,wpt);
+		WayPoints +=waypoint(output["T_ICAO2"],0.100,DB,wpt);
 
 	Push_Log(sess,sprintf("Found %d En-Route Alternates",sizeof(indices(Alt))));
 	 foreach(indices(Alt),string l) { output["Alt_"+l] =(["lat":	Alt[l]->lat, "long": Alt[l]->long, "dist":Alt[l]->dist ]); }
@@ -153,11 +155,11 @@ Push_Log(sess,sprintf("Distance: %s, Heading: %s",output["T_DIST_NM"],output["T_
 	 foreach(indices(NavID),string l) { output["Nav_"+l] =(["name":	NavID[l]->NAME, "type": NavID[l]->TYPE, "lat": NavID[l]->WGS_DLAT,
 																	"long": NavID[l]->WGS_DLONG, "freq":NavID[l]->FREQ, "arpt": NavID[l]->ARPT_ICAO , "icao": NavID[l]->ICAO ]); }
 
-
-
   		string alternate_replace =""; string imgmap =""; string altname ="";
- 		foreach(indices(Alt),string l )/* IMAGEMAP  (airports) */
-    {
+
+			array i = indices(Alt); array v = values(Alt)->dist; sort(v,i);
+			for(int x; x<sizeof(i); x++)
+			{ string l = i[x];
      	altname = replace(replace(GetICAOdata(l,DB)->name,"\n",""),"\r","");
      	alternate_replace += sprintf ("<tr><td>%s</td><td>%s</td><td>%O nm</td></tr>",l,altname,Alt[l]->dist);
       mapping start = st(Alt[l]->lat,Alt[l]->long,55.0,48.0,6.0,15.0,330.0,448.0);
@@ -165,23 +167,23 @@ Push_Log(sess,sprintf("Distance: %s, Heading: %s",output["T_DIST_NM"],output["T_
       int X1=(int)start->X;
       if(Y1+10 > 330.0) Y1=Y1-30;
       if(X1+10 > 448.0) X1=X1-30;
-      imgmap += sprintf("<area shape='circle' coords='%s,%s,3' href='javascript:void(0);'"+
+      imgmap += sprintf("<area shape='circle' coords='%s,%s,3' href='javascript:ALT(\"%s\");'"+
                         "onmouseover=\"return overlib('<b>AIRPORT:</b>%s<br/>%s<br/>distance:%s nm');\""+
                         "onmouseout='return nd();'>\n",
-                        (string)Y1,(string)X1,l,altname,(string)Alt[l]->dist);
-   	}
+                        (string)Y1,(string)X1,l,l,altname,(string)Alt[l]->dist);
+   		}
 
 
 		foreach(indices(NavID),string l )/* IMAGEMAP  (NavIDs) */
     {
      mapping start = st(NavID[l]->WGS_DLAT,NavID[l]->WGS_DLONG,55.0,48.0,6.0,15.0,330.0,448.0);
-     int Y1=(int)start->Y+5;
-     int X1=(int)start->X+5;
+     int Y1=(int)start->Y;
+     int X1=(int)start->X;
      if(Y1+10 > 330.0) Y1=Y1-30;
      if(X1+10 > 448.0) X1=X1-30;
-     imgmap += sprintf("<area shape='circle' coords='%s,%s,2' href='javascript:void(0);'"+
+     imgmap += sprintf("<area shape='circle' coords='%s,%s,2' href='javascript:NAV(\"%s\");'"+
                             "onmouseover=\"return overlib('<b>NAVID :</b>%s / %s (Type: %s)<br/>NAME: %s<br/>FREQ:%s<br/>AIRPORT: %s');\""+
-                            "onmouseout='return nd();'>\n", (string)Y1,(string)X1,l, (string)  NavID[l]->icao,(string) NavID[l]->type,
+                            "onmouseout='return nd();'>\n", (string)Y1,(string)X1,l,l, (string)  NavID[l]->icao,(string) NavID[l]->type,
 														(string)  NavID[l]->name,	(string)NavID[l]->freq, (string) NavID[l]->arpt );
 		}
 
@@ -189,13 +191,13 @@ Push_Log(sess,sprintf("Distance: %s, Heading: %s",output["T_DIST_NM"],output["T_
 		foreach(indices(WayPoints),string l )/* IMAGEMAP  (NavIDs) */
     {
      mapping start = st(WayPoints[l]->WGS_DLAT,WayPoints[l]->WGS_DLONG,55.0,48.0,6.0,15.0,330.0,448.0);
-     int Y1=(int)start->Y+2;
-     int X1=(int)start->X+3;
+     int Y1=(int)start->Y2;
+     int X1=(int)start->X2;
      if(Y1+10 > 330.0) Y1=Y1-30;
      if(X1+10 > 448.0) X1=X1-30;
-     imgmap += sprintf("<area shape='circle' coords='%s,%s,2' href='javascript:void(0);'"+
+     imgmap += sprintf("<area shape='circle' coords='%s,%s,2' href='javascript:WPT(\"%s\");'"+
                             "onmouseover=\"return overlib('<b>WAYPOINT:</b>%s  (Type: %s)<br/>DESC: %s<br/>AIRPORT: %s');\""+
-                            "onmouseout='return nd();'>\n", (string)Y1,(string)X1,l, (string)  WayPoints[l]->TYPE ,(string) WayPoints[l]->DESC,
+                            "onmouseout='return nd();'>\n", (string)Y1,(string)X1,l,l, (string)  WayPoints[l]->TYPE ,(string) WayPoints[l]->DESC,
 														(string)  WayPoints[l]->ICAO);
 		}
 
@@ -221,7 +223,7 @@ Push_Log(sess,"Scanning map.");
     if(Y2+10 > map_w) Y2=Y2-30;
     if(X1+10 > map_h) X1=X1-30;
     if(X2+10 > map_h) X2=X2-30;
-      img->line(Y1,X1,Y2,X2, 255,0,0); /*routeline*/
+    //  img->line(Y1,X1,Y2,X2, 255,0,0); /*routeline*/
       img->circle(Y1,X1,5,5,0,0,255);  /*start circle*/
       img->circle(Y2,X2,5,5,0,0,255);  /*end circle*/
       img=img->paste_alpha_color(Image.Font()->write(from),0,0,255,Y1+4,X1+4 ); /*ICAO name from */
@@ -237,7 +239,6 @@ Push_Log(sess,"Scanning map.");
 
 /* ALTERNATES */
 
-
       img=img->paste_alpha_color(Image.Font()->write("_not_valid_for_navigation_"),255,0,0,1,435 );
 
 			foreach(indices(Alt),string l )
@@ -247,14 +248,14 @@ Push_Log(sess,"Scanning map.");
           int X1=(int)start->X;
           if(Y1+10 > map_w) Y1=Y1-30;
           if(X1+10 > map_h) X1=X1-30;
-          img->circle(Y1,X1,3,3,255,0,255);
+          img->circle(Y1,X1,2,2,255,0,255);
         }
 
       foreach(indices(NavID),string l )
         {
         mapping start = st(NavID[l]->WGS_DLAT,NavID[l]->WGS_DLONG,55.0,48.0,6.0,15.0,map_w,map_h);
-          int Y1=(int)start->Y+5;
-          int X1=(int)start->X+5;
+          int Y1=(int)start->Y;
+          int X1=(int)start->X;
           if(Y1+10 > map_w) Y1=Y1-30;
           if(X1+10 > map_h) X1=X1-30;
           img->circle(Y1,X1,2,2,0,255,0);
@@ -262,8 +263,8 @@ Push_Log(sess,"Scanning map.");
       foreach(indices(WayPoints),string l )
         {
         mapping start = st(WayPoints[l]->WGS_DLAT,WayPoints[l]->WGS_DLONG,55.0,48.0,6.0,15.0,map_w,map_h);
-          int Y1=(int)start->Y+2;
-          int X1=(int)start->X+3;
+          int Y1=(int)start->Y;
+          int X1=(int)start->X;
           if(Y1+10 > map_w) Y1=Y1-30;
           if(X1+10 > map_h) X1=X1-30;
           img->circle(Y1,X1,2,2,0,0,255);
@@ -312,8 +313,199 @@ mapping output = decode_value(Stdio.FILE(combine_path(ini->SESSIONDIR,file+".out
 }
 
 
+string FNP_KLick_Route(string sess,mapping query,mapping ini)
+{
+ mapping route =([]);
+ mapping output = decode_value(Stdio.FILE(combine_path(ini->SESSIONDIR,sess+".out"))->read());
+ string tpl = Stdio.FILE(ini->HTMLDIR+"/"+ini->KLICKER)->read();
+
+ foreach(indices(output),string l )
+   {
+	 if(l[0..1] == "T_")
+	 	{
+	  string t1=  (string) "%"+replace(l,"T_","")+"%";
+    string t2=  (string) output[l];
+    tpl = replace(tpl,t1,  t2);
+		}
+   }
+
+	if(Stdio.exist(combine_path(ini->SESSIONDIR,sess+".route")))
+		{
+	 	route = decode_value(Stdio.FILE(combine_path(ini->SESSIONDIR,sess+".route"))->read());
+		}
+
+		int hop = sizeof(indices(route))+1;
+
+ route[1] = ([ "hop": 0,"type":"Airport","ident": output["T_ICAO1"], "lat": output["T_LAT1"],
+									"long": output["T_LONG1"], "desc": "Departure","name":output["T_NAME1"] ]);
+
+
+
+	string last_ident;
+	if(hop != 1)
+		{
+			last_ident = route[sizeof(indices(route))]->ident;
+
+		}
+
+	if(query->dest && query->type == "alt" && sizeof(query->dest) == 4 && last_ident != query->dest)
+		{
+		string ident = upper_case(query->dest);
+		route[hop] += ([ "hop": hop,"type":"Airport","ident": ident, "lat": output["Alt_"+ident]->lat,
+										 "long": output["Alt_"+ident]->long, "desc": "","name":DB[ident]->name]);
+		}
+
+
+	if(query->dest && query->type == "nav" && sizeof(query->dest) == 3 && last_ident != query->dest)
+		{
+		string ident = upper_case(query->dest);
+		route[hop] += ([ "hop": hop,"type":"NavID","ident": ident, "lat": output["Nav_"+ident]->lat,
+										 "long": output["Nav_"+ident]->long, "desc": "","name":output["Nav_"+ident]->name]);
+		}
+
+		if(query->dest && query->type == "wpt" && sizeof(query->dest) == 5 && last_ident != query->dest)
+		{
+
+		string ident = upper_case(query->dest);
+		route[hop] += ([ "hop": hop,"type":"WayPoint","ident": ident, "lat": output["Wpt_"+ident]->lat,
+										 "long": output["Wpt_"+ident]->long, "desc":output["Wpt_"+ident]->desc,"name":ident]);
+		}
+
+		if(query->dest && query->type == "del" && sizeof(query->dest) !=0 && last_ident != query->dest && query->dest != 1 && query->dest != last_ident)
+		{
+		route = FNP_KLick_Route_Delete_Hop(route,query->dest);
+		}
 
 
 
 
+Stdio.write_file(combine_path(ini->SESSIONDIR,sess+".route"),encode_value_canonic(route));
+
+
+		int last_insert = sizeof(indices(route))+1;
+		route[last_insert] = ([ "hop": sizeof(indices(route))+1,"type":"Airport","ident": output["T_ICAO2"], "lat": output["T_LAT2"],
+									"long": output["T_LONG2"], "desc": "Destination","name":output["T_NAME2"] ]);
+
+
+
+
+		string route_replace="";
+		for(int i =1;i<sizeof(indices(route))+1;i++)
+	  {
+	 	 float  dist;
+		 string dist_text;
+
+	 	 if(i==1)
+		 {
+		 	dist =  FNP_KLick_Route_Calc_Dist((float) route[i]->lat,(float) route[i]->long, (float) output["T_LAT1"],(float) output["T_LONG1"]);
+			dist =0;
+		dist_text ="&nbsp;";
+		 }
+
+	 	 if(i==sizeof(indices(route)))
+		 {
+		  dist =  FNP_KLick_Route_Calc_Dist((float) route[i-1]->lat,(float) route[i-1]->long, (float) output["T_LAT2"],(float) output["T_LONG2"]);
+		 dist_text ="&nbsp;";
+		  }
+	 	 if(i != 1 && i != sizeof(indices(route)))
+		  {
+			dist =  FNP_KLick_Route_Calc_Dist((float) route[i]->lat,(float) route[i]->long, (float) route[i-1]->lat,(float) route[i-1]->long);
+			dist_text ="";
+			}
+
+
+		 int dist_nm = (int) (dist*0.54);
+
+
+		 string this_hop = (string) i;
+		 string this_type= (string)route[i]->type;
+		 string this_id= (string)route[i]->ident;
+		 string this_name = (string)route[i]->name;
+		 string this_desc = (string) route[i]->desc;
+
+		 string this_dist = (string) sprintf("%s %s",(string) dist_nm,dist_text);
+		 if(dist_nm ==0) this_dist = "&nbsp;-";
+		 string this_link = "&nbsp;";
+
+	   if(i == sizeof(indices(route)) - 1 && i != 1) this_link = (string) sprintf("<a href=\"javascript:DEL(\'%d\');\">Delete</a>",i);
+
+  	 if(this_id == this_name) this_name ="";
+		 if(this_id == this_desc) this_desc ="";
+
+		route_replace += sprintf("<tr><td>%s&nbsp;</td><td>%s&nbsp;</td><td>%s&nbsp;</td><td>%s&nbsp;</td><td>%s&nbsp;</td><td>%s&nbsp;</td><td>%s</td></tr>\n",
+	                          this_hop,this_type,this_id,this_name,this_desc,this_dist,this_link );
+
+	}
+	tpl=replace(tpl,"%ROUTE-MAPIING%",route_replace);
+
+	return tpl;
+}
+
+float FNP_KLick_Route_Calc_Dist(float lat1,float long1,float lat2,float long2)
+{
+	object a	=	Geo( lat1, long1);
+  object b	=	Geo( lat2, long2);
+	return	a->GCDistance(b);
+}
+
+
+mapping FNP_KLick_Route_Delete_Hop(mapping x,string key)
+{
+	mapping ret =([]);
+	int i=1;
+	foreach(indices(x),string p)
+	{
+	if((string)p != (string) key)
+		{
+		 ret[i] = ([
+      "desc": x[p]->desc,
+      "hop": x[p]->hop,
+      "ident": x[p]->ident,
+      "lat": x[p]->lat,
+      "long": x[p]->long,
+      "name": x[p]->name,
+      "type": x[p]->type ]);
+		i++;
+		}
+	}
+return ret;
+}
+
+ string FNP_KLick_Route_Map(string file,mapping ini )
+{
+	file=combine_path(ini->SESSIONDIR,file);
+	string sess = replace(file,"_route.jpg",".fnp.route");
+string sess_out = replace(file,"_route.jpg",".fnp.out");
+ 	mapping route = decode_value(Stdio.FILE(sess)->read());
+	mapping output = decode_value(Stdio.FILE(sess_out)->read());
+
+	route[sizeof(indices(route))+1] = ([ "hop": sizeof(indices(route))+1,"type":"Airport","ident": output["T_ICAO2"], "lat": output["T_LAT2"],
+									"long": output["T_LONG2"], "desc": "Destination","name":output["T_NAME2"] ]);
+
+
+	object img =Image.load(file);
+ 	float map_w = 330.0;
+ 	float map_h = 448.0;
+
+ 	for(int i =1;i<sizeof(indices(route));i++)
+ 	{
+  	mapping start = st((float)route[i]->lat,  (float) route[i]->long,   55.0, 48.0, 6.0, 15.0, map_w, map_h);
+		mapping end   = st((float)route[i+1]->lat, (float)route[i+1]->long, 55.0, 48.0, 6.0, 15.0, map_w, map_h);
+		int Y1=(int)start->Y;
+  	int X1=(int)start->X;
+
+  	int Y2=(int)end->Y;
+  	int X2=(int)end->X;
+
+		if(Y1+10 > map_w) Y1=Y1-30;
+  	if(X1+10 > map_h) X1=X1-30;
+		if(Y2+10 > map_w) Y2=Y2-30;
+  	if(X2+10 > map_h) X2=X2-30;
+
+		img->line(Y1,X1,Y2,X2, 255,0,0);
+		img->line(Y1-1,X1-1,Y2-1,X2-1, 255,0,0);
+		//img->line(Y1+1,X1+1,Y2+1,X2+1, 255,0,0);
+ }
+ return Image.JPEG.encode(img);
+}
 
