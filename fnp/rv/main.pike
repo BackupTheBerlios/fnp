@@ -102,10 +102,10 @@ string rvsc(mapping query)
  string to = upper_case(query->to);
  string E="OK";
   if(from == to)                  return Send_Error("Departure and Destination the same");
-  if(CheckInputICAO(from) != 1)   return Send_Error(from+ ": Invalid ICAO ID");
-  if(CheckInputICAO(to) != 1)     return Send_Error(to+   ": Invalid ICAO ID");
-  if(GetICAOdata(from,DB)->error) return Send_Error(from+ ": Not in Database");
-  if(GetICAOdata(to,DB)->error)   return Send_Error(to+   ": Not in Database");
+  if(CheckInputICAO(from) != 1)   return Send_Error("\"" + from + "\": Invalid ICAO ID");
+  if(CheckInputICAO(to) != 1)     return Send_Error("\"" + to   + "\": Invalid ICAO ID");
+  if(GetICAOdata(from,DB)->error) return Send_Error("\"" + from + "\": Not in Database");
+  if(GetICAOdata(to,DB)->error)   return Send_Error("\"" + to   + "\": Not in Database");
   
 
 return router(from,to,DB);

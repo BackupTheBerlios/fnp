@@ -59,7 +59,8 @@ string rvsc_map(mapping query)
       img=img->paste_alpha_color(Image.Font()->write("alternates"),255,0,255,1,24 );  //
 
  
-/*ALTERNATES
+/*ALTERNATES */
+mapping alt = alt(to,1.000,DB);
       img=img->paste_alpha_color(Image.Font()->write("_not_valid_for_navigation_"),255,0,0,1,435 );
       foreach(indices(alt),string l )
         {
@@ -71,7 +72,7 @@ string rvsc_map(mapping query)
           img->circle(Y1,X1,2,2,255,0,255);
           img->circle(Y1,X1,1,1,255,0,255);
         }
-*/
+
 
  return Image.JPEG.encode(img);
 }

@@ -14,11 +14,7 @@ mapping st(float lat,float long,float N,float S, float W,float O,float width,flo
     pos["X2"] =N-lat;
     pos["X"] =pos->X2/pos->X1;
      return pos;
-
-
-
-
- }
+  }
 
 int map(float s1,float s2,float e1,float e2,string file,string f,string t,mapping alt )
 {
@@ -50,7 +46,7 @@ object img =Image.load("rv/germany.map");
 
   img=img->paste_alpha_color(Image.Font()->write("_not_valid_for_navigation_"),255,0,0,1,435 );
 
-  /*ALTERNATES*/
+  /*ALTERNATES
 
  foreach(indices(alt),string l )
  {
@@ -64,7 +60,7 @@ object img =Image.load("rv/germany.map");
 
  }
 
-
+   */
  Stdio.write_file(file,Image.JPEG.encode(img));
 
  }

@@ -76,5 +76,7 @@ int CheckInputICAO(string icao)
    mapping ini = read_setings("settings.ini");
    string tpl = Stdio.FILE(ini->HTMLDIR+"/"+ini->ERRORTPL)->read();
    tpl = replace(tpl,"%ERROR-MESSAGE%",  error);
-   return (string) tpl;      
+   write("[%s %s] ERROR -> %s\n",time_now()->date,time_now()->time,error);
+   return (string) tpl;
+
  }
