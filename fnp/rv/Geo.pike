@@ -22,7 +22,7 @@ class Geo {
       pt->lat=g->point->lat;
       pt->lon=g->point->lon;
     } else if (object_variablep(g,"lat")) {
-      pt->lat=g->lat;
+      pt->lat=g->lat;                           
       pt->lon=g->lon;
     } else {
       pt->lat=pt->lon=0;

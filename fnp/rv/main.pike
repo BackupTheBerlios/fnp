@@ -41,7 +41,20 @@ void  handle_request(Protocols.HTTP.Server.Request request)
    }
 
 
-  if(file == "/") ret = Stdio.FILE(ini->HTMLDIR+"/"+ini->STARTPAGE)->read();  type = "text/html";
+  if(file == "/") {ret = Stdio.FILE(ini->HTMLDIR+"/"+ini->STARTPAGE)->read();  type = "text/html";
+
+/* AC DATABASE */
+  mapping Aircrafts = Load_AC_DataBase();
+  write("%O", Aircrafts);
+  string acs;
+   foreach(indices(Aircrafts),string l )
+   {
+   acs += sprintf("<option value=\"%s\">%s (%s)</option>",(string)l,(string)l,(string)Aircrafts[l]->TYPE);
+   }
+
+     ret = replace(ret,"{AC-LIST}",acs);
+  }
+                      
   if(file_ext[sizeof(file_ext)-1] == "jpg") { ret = "BILD"; type = "text/html"; }
   if(file_ext[sizeof(file_ext)-1] == "html") {ret = "html"; type = "text/html"; }
   
@@ -77,11 +90,9 @@ void  handle_request(Protocols.HTTP.Server.Request request)
 
 
 string preparser(string x,string query)
-
 {
-
-mapping vals =([]);
-vals["VERSION"] = Stdio.FILE("version.txt")->read();
+ mapping vals =([]);
+ vals["VERSION"] = Stdio.FILE("version.txt")->read();
 
     
 if(query !="")
@@ -100,18 +111,20 @@ if(query !="")
      x = replace(x,t1,  t2);
     }    
 return x;
-  
 }
 
 
 
 
                                                                               
-string rvsc(mapping query)
+ string rvsc(mapping query)
 {
- mapping DB = OpenDatabase("iat");
+ mapping ini = read_setings("settings.ini");
+ mapping DB = OpenDatabase("ficken");
  string from = upper_case(query->from);
  string to = upper_case(query->to);
+ string ac = query->ac;
+ 
  string E="OK";
   if(from == to)                  return Send_Error("Departure and Destination the same");
   if(CheckInputICAO(from) != 1)   return Send_Error("\"" + from + "\": Invalid ICAO ID");
@@ -120,20 +133,30 @@ string rvsc(mapping query)
   if(GetICAOdata(to,DB)->error)   return Send_Error("\"" + to   + "\": Not in Database");
   
 
-return router(from,to,DB);
+return router(from,to,ac,DB);
 
 }
 
 
 
-string  router(string from,string to, mapping DB)
+string  router(string from,string to,string ac, mapping DB)
   {
   mapping ini = read_setings("settings.ini");
+  mapping AC = Load_AC_DataBase();
   mapping output=([]);
+  
    output["INI_NAME"] =(string)  ini->NAME;
-   output["INI_TAS"] = (string) ini->TAS;
    output["INI_WD"] = (string) ini->WD;
    output["INI_WS"] = (string) ini->WS;
+   
+   output["AC-TAS"] = (string)  AC[ac]->TAS;
+   output["AC-REG"] = (string)  ac;
+   output["AC-TYPE"] = (string)  AC[ac]->TYPE;
+   output["AC-MOTW"] = (string)  AC[ac]->MOTW;
+   output["AC-RANGE"] = (string)  AC[ac]->RANGE;
+   output["AC-RMK"] = (string)  AC[ac]->RMK;
+   
+
    output["ICAO1"] =from;
    output["ICAO2"] = to;
    output["NAME1"] = replace(replace(GetICAOdata(from,DB)->name,"\n",""),"\r","");
@@ -168,13 +191,13 @@ string  router(string from,string to, mapping DB)
    float RAD = 0.01745329;
    float ALPHA = RAD*( 180 - ( (int) ini->WD - (int)output->HEADING) );
    float CWIND = (int) ini->WS*sin(ALPHA);
-   float WCA =  (asin( CWIND/ (int) ini->TAS) /RAD);
+   float WCA =  (asin( CWIND/ (int) AC[ac]->TAS) /RAD);
    float TWIND = (int) ini->WS*cos(ALPHA);
-   float ETAS  = (int) ini->TAS*cos(WCA*RAD);
+   float ETAS  = (int) AC[ac]->TAS*cos(WCA*RAD);
    float GS    = ETAS + TWIND;
    output["WCA"] = (string) WCA;
    output["GS"]    = (string) sprintf("%.2f",GS);
-   float miles_per_min = 60.0/(float)ini->TAS;
+   float miles_per_min = 60.0/(float)AC[ac]->TAS;
    output["FLIGHTTIME"]  = (string) sprintf("%.0f",((float)miles_per_min * (float)output->DIST_NM));
    output["miles_per_min"] =(string) miles_per_min;
 
@@ -207,10 +230,43 @@ string  router(string from,string to, mapping DB)
       int X1=(int)start->X;
       if(Y1+10 > 330.0) Y1=Y1-30;
       if(X1+10 > 448.0) X1=X1-30;
-      imgmap += sprintf("<area shape='circle' coords='%s,%s,3' href='/RVSC/route?from=%s&to=%s' onmouseover=\"return overlib('%s<br/>%s<br/>distance:%s nm');\" onmouseout='return nd();'>\n",(string)Y1,(string)X1,output->ICAO1,l,l,altname,(string)alternate[l]->dist);
-    }
+      imgmap += sprintf("<area shape='circle' coords='%s,%s,3' href='/RVSC/route?from=%s&to=%s&ac=%s'"+
+                        "onmouseover=\"return overlib('<b>AIRPORT:</b>%s<br/>%s<br/>distance:%s nm');\""+
+                        "onmouseout='return nd();'>\n",
+                        (string)Y1,(string)X1,output->ICAO1,l,ac,l,altname,(string)alternate[l]->dist);
+      }
+
+
+      mapping nav = navid(from,1.0,DB);
+      nav +=  navid(to,1.0,DB);
+
+      foreach(indices(nav),string l )
+        {
+
+         mapping start = st(nav[l]->WGS_DLAT,nav[l]->WGS_DLONG,55.0,48.0,6.0,15.0,330.0,448.0);
+          int Y1=(int)start->Y+5;
+          int X1=(int)start->X+5;
+          
+          if(Y1+10 > 330.0) Y1=Y1-30;
+          if(X1+10 > 448.0) X1=X1-30;
+
+     
+         imgmap += sprintf("<area shape='circle' coords='%s,%s,3' href='javascript:void(0);'"+
+                            "onmouseover=\"return overlib('<b>NAVID :</b>%s / %s (Type: %s)<br/>NAME: %s<br/>FREQ:%s<br/>AIRPORT: %s');\""+
+                            "onmouseout='return nd();'>\n", (string)Y1,(string)X1,l, nav[l]->ICAO,  (string)nav[l]->TYPE, nav[l]->NAME, (string)nav[l]->FREQ,nav[l]->ARPT_ICAO );
+
+                           
+          
+        }
+        
+    
+      
    tpl = replace(tpl,"{ALTERNATE}",alternate_replace);
    tpl = replace(tpl,"{IMGMAP}",imgmap);
+
+
+
+
    
    write("[%s %s] process route from %O to %O for %O \n",time_now()->date,time_now()->time,output->ICAO1,output->ICAO2,sprintf("%02s",ini->NAME));
 return tpl;

@@ -29,7 +29,7 @@ if(l == icao) {
  ret["lat"]  = replace(replace(db[icao]->lat,"\n",""),"\r","");
  ret["long"]  = replace(replace(db[icao]->long,"\n",""),"\r","");
  ret["runway"]  = "";
-  ret["id"]  = replace(replace(db[id]->long,"\n",""),"\r","");
+  ret["id"]  = replace(replace(db[icao]->id,"\n",""),"\r","");
 
  return ret;
 }

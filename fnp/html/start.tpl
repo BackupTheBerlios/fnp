@@ -41,8 +41,9 @@
                <br><br><br><br>
 <form action="/RVSC/route">
 <table  valign="top" border="0" cellspacing="0" cellpadding="0" height="">
-<tr><td><font face=Verdana size=2 color=#000000>FROM &nbsp;</td><td><input type="text" name="from" size="4" maxlength="4"></td></tr>
-<tr><td><font face=Verdana size=2 color=#000000>TO</td><td><input type="text" name="to" size="4" maxlength="4"></td></tr>
+<tr><td><font face=Verdana size=2 color=#000000>FROM (ICAO code)&nbsp;</td><td><input type="text" name="from" size="4" maxlength="4"></td></tr>
+<tr><td><font face=Verdana size=2 color=#000000>TO (ICAO code)</td><td><input type="text" name="to" size="4" maxlength="4"></td></tr>
+<tr><td><font face=Verdana size=2 color=#000000>aircraft</td><td><select name=ac>{AC-LIST}</select> </td></tr>
 
 </table>     <input type="submit" name="go"> </form>
 

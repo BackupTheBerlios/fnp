@@ -11,9 +11,11 @@
  <body bgcolor="#FFFFFF" text="#000000" link="blue" vlink="red" alink="red" leftmargin=5 topmargin=5 marginheight="5" marginwidth="5">
          
  <br>
-  <center><font face=Verdana size=4 color=#999999><u>%ICAO1% (%NAME1%) - %ICAO2% (%NAME2%)</u></font><br>
+  <center><font face=Verdana size=4 color=#999999><u>%ICAO1% (%NAME1%) - %ICAO2% (%NAME2%)</u></font><br />
+   <font face=Verdana size=3 color=#999999>%AC-REG% / %AC-TYPE% <br>
+  
   <br>
-   <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
+   <div id="overDiv" style="position:absolute; visibility:hidden; z-index:100;"></div>
    <script language="JavaScript" src="overlib.js"></script>
 
 
@@ -21,7 +23,7 @@
   <tr>
    <td valign=top>
 
-     %DATE% %TIME%
+     Date/Time: %DATE% %TIME%
     <hr><b>DISTANCE:</b><br>
     <table>
      <tr><td>nautical miles</td><td>%DIST_NM%</td></tr>
@@ -30,9 +32,11 @@
     </table>
 
     <hr><b>FLIGHDATA:</b><br>
-    <table>
-     <tr><td>%HEADING%</td><td> True Course</td></tr>
-     <tr><td>%GS%</td><td> Ground  Speed</td></tr>
+    <table>    
+     <tr><td>True Course</td><td> %HEADING%</td></tr>
+     <tr><td>Ground  Speed</td><td>%GS% NM</td></tr>
+     <tr><td>True Air Speed</td><td> %AC-TAS% NM</td></tr>
+     
      <tr><td>%FLIGHTTIME%</td><td>Min. Flight Time</td></tr>
     </table>
 
@@ -53,7 +57,7 @@
 
     <hr><b>ALTERNATE AIRPORTS</b>
     <table>
-     <tr><td>ICAO</td><td>&nbsp;</td><td>distance</td></tr>
+     <tr><td>ICAO</td><td>Name</td><td>distance</td></tr>
      {ALTERNATE}
     </table>
    </td>
@@ -75,7 +79,7 @@
    <td>%HEADING% °</td>
    <td>&nbsp;&nbsp;&nbsp;</td>
    <td>true airspeed (TAS)</td>
-   <td>%INI_TAS% kt.</td>
+   <td>%AC-TAS% kt.</td>
   </tr>
   <tr>
    <td>wind direction (WD)</td>

@@ -101,6 +101,8 @@ var CLOSEWEIGHT		=	73;
 
 
 
+
+
 ////////////////////////////////////////////////////////////////////////////////////
 // DEFAULT CONFIGURATION
 // You don't have to change anything here if you don't want to. All of this can be
@@ -109,11 +111,11 @@ var CLOSEWEIGHT		=	73;
 
 // Main background color (the large area)
 // Usually a bright color (white, yellow etc)
-if (typeof ol_fgcolor == 'undefined') { var ol_fgcolor = "#CCCCFF";}
+if (typeof ol_fgcolor == 'undefined') { var ol_fgcolor = "#FFFFFF";}
 	
 // Border color and color of caption
 // Usually a dark color (black, brown etc)
-if (typeof ol_bgcolor == 'undefined') { var ol_bgcolor = "#333399";}
+if (typeof ol_bgcolor == 'undefined') { var ol_bgcolor = "#999999";}
 	
 // Text color
 // Usually a dark color
@@ -150,19 +152,20 @@ if (typeof ol_closesize == 'undefined') { var ol_closesize = "1";}
 
 // Width of the popups in pixels
 // 100-300 pixels is typical
-if (typeof ol_width == 'undefined') { var ol_width = "100";}
+if (typeof ol_width == 'undefined') { var ol_width = "200";}
 
 // How thick the ol_border should be in pixels
+
 // 1-3 pixels is typical
-if (typeof ol_border == 'undefined') { var ol_border = "1";}
+if (typeof ol_border == 'undefined') { var ol_border = "3";}
 
 // How many pixels to the right/left of the cursor to show the popup
 // Values between 3 and 12 are best
-if (typeof ol_offsetx == 'undefined') { var ol_offsetx = 2;}
+if (typeof ol_offsetx == 'undefined') { var ol_offsetx = 12;}
 	
 // How many pixels to the below the cursor to show the popup
 // Values between 3 and 12 are best
-if (typeof ol_offsety == 'undefined') { var ol_offsety = 2;}
+if (typeof ol_offsety == 'undefined') { var ol_offsety = 12;}
 
 // Default text for popups
 // Should you forget to pass something to overLIB this will be displayed.
@@ -185,7 +188,7 @@ if (typeof ol_close == 'undefined') { var ol_close = "Close"; }
 
 // Default vertical alignment for popups.
 // It's best to leave RIGHT here. Other options are LEFT and CENTER.
-if (typeof ol_hpos == 'undefined') { var ol_hpos = RIGHT; }
+if (typeof ol_hpos == 'undefined') { var ol_hpos = CENTER; }
 
 // Default status bar text when a popup is invoked.
 if (typeof ol_status == 'undefined') { var ol_status = ""; }
@@ -328,6 +331,7 @@ if (typeof ol_textweight == 'undefined') { var ol_textweight = "normal";}
 if (typeof ol_captionsizeunit == 'undefined') { var ol_captionsizeunit = "px";}
 
 // Decoration of the caption ("none", "underline", "line-through" or "blink")
+
 // Only used if CSS inline styles are being used (ol_css = CSSSTYLE)
 if (typeof ol_captiondecoration == 'undefined') { var ol_captiondecoration = "none";}
 
@@ -369,6 +373,7 @@ if (typeof ol_texts == 'undefined') { var ol_texts = new Array("Text 0", "Text 1
 
 // Array with captions.
 if (typeof ol_caps == 'undefined') { var ol_caps = new Array("Caption 0", "Caption 1"); }
+
 
 
 
@@ -633,6 +638,7 @@ function overlib() {
 			if (ar[i] == CENTER || ar[i] == LEFT || ar[i] == RIGHT) { o3_hpos = ar[i]; continue; }
 			if (ar[i] == OFFSETX) { o3_offsetx = ar[++i]; continue; }
 			if (ar[i] == OFFSETY) { o3_offsety = ar[++i]; continue; }
+
 			if (ar[i] == FGCOLOR) { o3_fgcolor = ar[++i]; continue; }
 			if (ar[i] == BGCOLOR) { o3_bgcolor = ar[++i]; continue; }
 			if (ar[i] == TEXTCOLOR) { o3_textcolor = ar[++i]; continue; }
@@ -720,6 +726,7 @@ function nd() {
 	
 	return true;
 }
+
 
 
 
@@ -967,6 +974,7 @@ function placeLayer() {
 			if (o3_hpos == LEFT) {
 				placeX = placeX - (o3_snapx + snapping);
 			} else {
+
 				// CENTER and RIGHT
 				placeX = placeX + (o3_snapx - snapping);
 			}
@@ -987,6 +995,7 @@ function placeLayer() {
 		if (o3_vauto == 1) {
 			if (ie4) iheight = eval('o3_frame.'+docRoot+'.clientHeight');
 			if (ns4 || ns6) iheight = o3_frame.innerHeight;
+
 
 			iheight = (eval(iheight)) / 2;
 			if ( (o3_y - scrolloffset) > iheight) {

@@ -4,7 +4,7 @@
 string rvsc_map(mapping query)
 {
   mapping ini = read_setings("settings.ini");
-  mapping DB = OpenDatabase(ini->DB);
+  mapping DB = OpenDatabase(ini->DB_APT);
   string from = upper_case(query->from);
   string to = upper_case(query->to);
 
@@ -37,8 +37,8 @@ string rvsc_map(mapping query)
     if(X1+10 > map_h) X1=X1-30;
     if(X2+10 > map_h) X2=X2-30;
       img->line(Y1,X1,Y2,X2, 255,0,0); /*routeline*/
-      img->circle(Y1,X1,4,4,0,0,255);  /*start circle*/
-      img->circle(Y2,X2,4,4,0,0,255);  /*end circle*/
+      img->circle(Y1,X1,5,5,0,0,255);  /*start circle*/
+      img->circle(Y2,X2,5,5,0,0,255);  /*end circle*/
       img=img->paste_alpha_color(Image.Font()->write(from),0,0,255,Y1+4,X1+4 ); /*ICAO name from */
       img=img->paste_alpha_color(Image.Font()->write(to),0,0,255,Y2+4,X2+4 );   /*ICAO name to */
       img=img->paste_alpha_color(Image.Font()->write(time_now()->date+" "+time_now()->time),0,0,0,1,1 ); /*time / date info*/
@@ -56,11 +56,29 @@ mapping alt = alt(to,1.000,DB);
           int X1=(int)start->X;
           if(Y1+10 > map_w) Y1=Y1-30;
           if(X1+10 > map_h) X1=X1-30;
-          img->circle(Y1,X1,3,3,255,0,255);
-          
+          img->circle(Y1,X1,3,3,255,0,255);          
         }
 
 
+ mapping nav = navid(from,1.0,DB);
+          nav += navid(to,1.0,DB);
+      foreach(indices(nav),string l )
+        {
+
+         mapping start = st(nav[l]->WGS_DLAT,nav[l]->WGS_DLONG,55.0,48.0,6.0,15.0,map_w,map_h);
+          int Y1=(int)start->Y+5;
+          int X1=(int)start->X+5;
+          if(Y1+10 > map_w) Y1=Y1-30;
+          if(X1+10 > map_h) X1=X1-30;
+          img->circle(Y1,X1,1,1,0,255,0);
+
+        }
+  
+        
+
+
+
+        
  return Image.JPEG.encode(img);
 }
 

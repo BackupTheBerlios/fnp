@@ -22,9 +22,9 @@ return t2;
 }
 
 mapping find_codes(string c)
-{
+{   mapping ini = read_setings("settings.ini");
   mapping ret=([]);
-  mapping DB = OpenDatabase("iat");
+  mapping DB = OpenDatabase(ini->DB_APT);
 
   foreach(indices(DB), string l)
    {
