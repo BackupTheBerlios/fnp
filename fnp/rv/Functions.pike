@@ -1,24 +1,100 @@
-mapping GetICAOdata(string icao,mapping db)
-{
- mapping ret=([]);
- foreach(indices(db), string l)
-{
-if(l == icao) {
+string VERSION = "FNP HTTPD Version:"+replace(replace(Stdio.FILE("version.txt")->read(),"\n",""),"\r","");
 
- ret["name"] = replace(replace(db[icao]->name,"\n",""),"\r","");
- ret["lat"]  = replace(replace(db[icao]->lat,"\n",""),"\r","");
- ret["long"]  = replace(replace(db[icao]->long,"\n",""),"\r","");
- ret["runway"]  = "";
-  ret["id"]  = replace(replace(db[icao]->id,"\n",""),"\r","");
+int debug(mixed d)
+{
+	write("%O\n",d);
+}
 
- return ret;
+
+/* TEMPLATE PARSER */
+
+
+mapping File_Server_Parsed(string file,string query,string tpl,mapping ini,string file_type) /* Query and Database */
+{
+debug("open file "+file);
+  file = sprintf("%s/%s",ini->HTMLDIR,basename(file));
+	if(!Stdio.exist(file)) /* 404? */
+		{ debug("open file ERROR "+file); mapping ret = (["data" : "404" ,"type" : "text/html", "server": VERSION  ]); return ret;}
+
+	string in = Stdio.FILE(file)->read(); /* read file ..*/
+
+	if(tpl == 0 ) /* send the file unparsed ..*/
+		{
+			debug("open file (set header)  "+"CT-"+upper_case(file_type) );
+			mapping ret = (["data" : in ,"type" : ini["CT-"+upper_case(file_type)], "server": VERSION  ]);
+			return ret;
+		}
+
+	mapping vals =([]);
+ 	vals["DEMO"] ="";
+ 	vals["PRE_FROM"] ="";
+  vals["PRE_TO"] ="";
+
+	if(query !="") { foreach(query/"&",string t) { array t1=t/"="; vals["QUERY{"+t1[0]+"}"]=t1[1]; } } /* Query Parser */
+
+  foreach(indices(vals),string l ) { string t1=  "%"+l+"%"; string t2=  vals[l]; in = replace(in,t1,  t2); } /* repace %query% */
+
+	if(ini->DEMO == "YES")/* DEMO MODE ? */
+	{
+   	vals["DEMO"] =sprintf("The System running in DEMO mode, The Route is fixed imited from %s to %s",ini->DEMO_F,ini->DEMO_T);
+   	vals["PRE_FROM"] =ini->DEMO_F;
+   	vals["PRE_TO"] =ini->DEMO_T;
+	}
+
+
+
+	if(tpl == "STARTPAGE")/* Load AirCraft DataBase for STARTPAGE */
+
+	{
+		mapping Aircrafts = Load_AC_DataBase();
+		string acs;
+  	foreach(indices(Aircrafts),string l )
+  	{
+   		acs += sprintf("<option value=\"%s\">%s (%s)</option>",(string)l,(string)l,(string)Aircrafts[l]->TYPE);
+  	}
+		in = replace(in,"{AC-LIST}",acs);
+	}
+
+	mapping ret = (["data" : in ,"type" : ini["CT-"+upper_case(file_type)], "server": VERSION  ]);
+
+	return ret;
 }
+
+mapping  Send_Error(string error)
+{
+   string tpl = Stdio.FILE(ini->HTMLDIR+"/"+ini->ERRORTPL)->read();
+   tpl = replace(tpl,"%ERROR-MESSAGE%",  error);
+   write("[%s %s] ERROR -> %s\n",time_now()->date,time_now()->time,error);
+   return ([ "data": (string) tpl, "type": ini["CT-HTML"] ]);
+
 }
+
+
+int CheckInputICAO(string icao)
+ {
+  if (strlen(icao) != 4) {return 2;}
+  if (sscanf(icao, "%*[A-Z]%1*s") == 2) {return 2;}
+  if (sscanf(icao, "%*[A-Z]%1*s") == 1) {return 1;}
+ }
+
+ mapping GetICAOdata(string icao,mapping db)
+{
+ 	mapping ret=([]);
+ 	foreach(indices(db), string l)
+	{
+		if(l == icao)
+		{
+ 			ret["name"] = replace(replace(db[icao]->name,"\n",""),"\r","");
+ 			ret["lat"]  = replace(replace(db[icao]->lat,"\n",""),"\r","");
+ 			ret["long"]  = replace(replace(db[icao]->long,"\n",""),"\r","");
+ 			ret["runway"]  = "";
+ 			ret["id"]  = replace(replace(db[icao]->id,"\n",""),"\r","");
+ 			return ret;
+		}
+	}
 ret["error"] = "1";
 return ret;
-
 }
-
 
 
 mapping time_now()
@@ -31,42 +107,171 @@ mapping time_now()
 }
 
 
-
-int CheckInputICAO(string icao)
- {
-  if (strlen(icao) != 4) {return 2;}
-  if (sscanf(icao, "%*[A-Z]%1*s") == 2) {return 2;}
-  if (sscanf(icao, "%*[A-Z]%1*s") == 1) {return 1;}
- }
-
-
- string Send_Error(string error)
- {
-   mapping ini = read_setings("settings.ini");
-   string tpl = Stdio.FILE(ini->HTMLDIR+"/"+ini->ERRORTPL)->read();
-   tpl = replace(tpl,"%ERROR-MESSAGE%",  error);
-   write("[%s %s] ERROR -> %s\n",time_now()->date,time_now()->time,error);
-   return (string) tpl;
-
- }
-
-
-
- mapping st(float lat,float long,float N,float S, float W,float O,float width,float height)
+string start_session(mapping query)
 {
-    mapping pos=([]);
-    pos["argv"] = sprintf("lat=%O, long=%O, N=%O,S=%O W=%O, O=%O, width=%O, height=%O",lat,long,N,S,W,O,width,height);
-    pos["geo_breite"] =  O-W;
-    pos["Y1"] =  pos->geo_breite/width;
-    pos["Y2"] = long-W;
-    pos["Y"] =pos->Y2/pos->Y1;
-    pos["geo_hoehe"] =  N-S;
-    pos["X1"] =  pos->geo_hoehe/height;
-    pos["X2"] =N-lat;
-    pos["X"] =pos->X2/pos->X1;
-    
- return pos;
+
+string my_name = my_crypt(sprintf("%d%O",time(),query));
+Stdio.write_file(combine_path(ini->SESSIONDIR,my_name),encode_value_canonic(query));
+Stdio.write_file(combine_path(ini->SESSIONDIR,my_name+".log"),sprintf("[%s]\t starting session\n",time_now()->time));
+
+debug("starting session "+my_name);
+
+return my_name;
+
+
 }
+
+
+
+string my_crypt(string f)
+{
+	string ret="";
+	array ff=upper_case(crypt(f))/"";
+	foreach(ff,string c)
+	{
+		if (sscanf(c, "%*[A-Z]%1*s") == 1) ret += c;
+	}
+return ret;
+}
+
+string show_log(string sess)
+{
+sess =combine_path(ini->SESSIONDIR,sess+".log");
+
+	if(Stdio.exist(sess)) return Stdio.FILE(sess)->read();
+	return ".";
+}
+
+string Push_Log(string sess,string log)
+{
+	log =sprintf("[%s]\t %s\n",time_now()->time,log);
+	sess =combine_path(ini->SESSIONDIR,sess+".log");
+	Stdio.append_file(sess,log);
+}
+
+
+
+
+mapping alt(string icao, float range,mapping db)
+{
+float lat =	(float) db[icao]->lat;
+float long =	(float)	db[icao]->long;
+return alt2(lat,long,range,db);
+}
+
+mapping alt2(float lat, float long ,float range,mapping db)
+
+{
+
+
+ mapping tmp=([]);
+  mapping ret=([]);
+  foreach(indices(db), string l)
+  {
+    if( (float) db[l]->long > long - range && (float) db[l]->long < long + range) tmp[l] +=(["long": (float) db[l]->long ]);
+    if ( (float) db[l]->lat > lat - range && (float) db[l]->lat < lat + range) tmp[l] +=(["lat": (float) db[l]->lat ]);
+  }
+
+  foreach(indices(tmp),string l )
+  {
+   if(tmp[l]->lat && tmp[l]->long )
+   {
+    object a=Geo(tmp[l]->lat,tmp[l]->long);
+    object b=Geo(lat,long);
+    if(a->GCDistance(b) >10)
+    {
+     ret[l] +=(["lat": tmp[l]->lat ]);
+     ret[l] +=(["long": tmp[l]->long ]);
+     ret[l] +=(["dist": (int)a->GCDistance(b) ]); /*runway informations missing.*/
+    }
+   }
+  }
+return ret;
+}
+
+
+
+
+mapping PosFinder(string icao, float  tc,float dist,mapping db)
+{
+/* this function calculates the position given by startpoint with distance and heading*/
+ 	float dlat =(float) db[icao]->lat;
+ 	float dlon =(float) db[icao]->long;
+	float pi=3.1415926535;
+	dlat = (pi/180)*dlat; /* dlat To Radians */
+	dlon = (pi/180)*dlon; /* dlon To Radians */
+	tc= (pi/180)*tc; /*course to radians */
+	dist =  (dist*pi/(180*60));
+
+	if(dlat >0) dlat=asin(sin(dlat)*cos(dist)+cos(dlat)*sin(dist)*cos(tc));
+	if(dlat <0) dlat=asin(sin(dlat)*cos(dist)-cos(dlat)*sin(dist)*cos(tc));
+	if(dlon >0) dlon=dlon+asin(sin(tc)*sin(dist)/cos(dlat));
+	if(dlon <0) dlon=dlon-asin(sin(tc)*sin(dist)/cos(dlat));
+
+	mapping ret=([]);
+	ret["rlon"] = dlon;
+	ret["rlat"] = dlat;
+	ret["WGS_DLAT"] = (180/pi)*dlat;
+	ret["WGS_DLONG"] = (180/pi)*dlon;
+return ret;
+}
+
+
+
+mapping navid(string icao, float range,mapping db,mapping nav)
+{
+  float lat =(float) db[icao]->lat;
+  float long =(float)db[icao]->long;
+  return navid2( lat, long,  range, db,nav);
+}
+
+
+mapping navid2(float lat,float long, float range,mapping db,mapping nav)
+{
+
+  mapping tmp=([]);
+  mapping ret=([]);
+
+  foreach(indices(nav), string l)
+  {
+
+    if( (float) nav[l]->WGS_DLONG > long - range && (float) nav[l]->WGS_DLONG < long + range)
+    { tmp[l] +=(["WGS_DLONG": (float) nav[l]->WGS_DLONG ]);}
+
+    if( (float) nav[l]->WGS_DLAT > lat - range && (float) nav[l]->WGS_DLAT < lat + range)
+    {tmp[l] +=(["WGS_DLAT": (float) nav[l]->WGS_DLAT ]);}
+
+  }
+
+ foreach(indices(tmp),string l )
+  {
+   if(tmp[l]->WGS_DLAT && tmp[l]->WGS_DLONG )
+   {
+
+    object a=Geo(tmp[l]->WGS_DLAT,tmp[l]->WGS_DLONG);
+    object b=Geo(lat,long);
+    if(a->GCDistance(b) >0)
+   {
+     ret[l] +=(["WGS_DLAT": tmp[l]->WGS_DLAT ]);
+     ret[l] +=(["WGS_DLONG": tmp[l]->WGS_DLONG ]);
+     ret[l] +=(["NAME": nav[l]->NAME]);
+     ret[l] +=(["FREQ": nav[l]->FREQ ]);
+     ret[l] +=(["STATE_PROV": nav[l]->STATE_PROV]);
+     ret[l] +=(["ICAO": nav[l]->ICAO ]);
+     ret[l] +=(["TYPE": nav[l]->TYPE ]);
+     ret[l] +=(["ARPT_ICAO": nav[l]->ARPT_ICAO ]);
+
+   }
+   }
+  }
+  return ret;
+}
+
+
+
+
+
+
 
 
 
@@ -97,7 +302,7 @@ class Geo {
       pt->lat=g->point->lat;
       pt->lon=g->point->lon;
     } else if (object_variablep(g,"lat")) {
-      pt->lat=g->lat;                           
+      pt->lat=g->lat;
       pt->lon=g->lon;
     } else {
       pt->lat=pt->lon=0;
@@ -187,159 +392,11 @@ class Geo {
   }
 }
 
-mapping alt(string icao, float range,mapping db)
-{
-   float lat =(float) db[icao]->lat;
-   float long =(float)db[icao]->long;
-   return  alt2(lat,long,range,db);
-}
-
-mapping alt2(float lat,float long, float range,mapping db)
-
-{
- mapping tmp=([]);
-  mapping ret=([]);
-  foreach(indices(db), string l)
-  {
-    if( (float) db[l]->long > long - range && (float) db[l]->long < long + range) tmp[l] +=(["long": (float) db[l]->long ]);
-    if ( (float) db[l]->lat > lat - range && (float) db[l]->lat < lat + range) tmp[l] +=(["lat": (float) db[l]->lat ]);
-  }      /*runway filter  missing.*/
-
-  foreach(indices(tmp),string l )
-  {
-   if(tmp[l]->lat && tmp[l]->long )
-   {
-    object a=Geo(tmp[l]->lat,tmp[l]->long);
-    object b=Geo(lat,long);
-    if(a->GCDistance(b) >10)
-    {
-     ret[l] +=(["lat": tmp[l]->lat ]);
-     ret[l] +=(["long": tmp[l]->long ]);
-     ret[l] +=(["dist": (int)a->GCDistance(b) ]); /*runway informations missing.*/
-    }
-   }
-  }
-return ret;
-}
-
-
-mapping navid(string icao, float range,mapping db)
-{
-  float lat =(float) db[icao]->lat;
-  float long =(float)db[icao]->long;
-  return navid2( lat, long,  range, db);
-}
-
-
-mapping navid2(float lat,float long, float range,mapping db)
-{
-  mapping nav= OpenDatabase_NAV();
-  mapping tmp=([]);
-  mapping ret=([]);
-
-  foreach(indices(nav), string l)
-  {
-
-    if( (float) nav[l]->WGS_DLONG > long - range && (float) nav[l]->WGS_DLONG < long + range)
-    { tmp[l] +=(["WGS_DLONG": (float) nav[l]->WGS_DLONG ]);}
-
-    if( (float) nav[l]->WGS_DLAT > lat - range && (float) nav[l]->WGS_DLAT < lat + range)
-    {tmp[l] +=(["WGS_DLAT": (float) nav[l]->WGS_DLAT ]);}
-
-  }
-
- foreach(indices(tmp),string l )
-  {
-   if(tmp[l]->WGS_DLAT && tmp[l]->WGS_DLONG )
-   {
-
-    object a=Geo(tmp[l]->WGS_DLAT,tmp[l]->WGS_DLONG);
-    object b=Geo(lat,long);
-    if(a->GCDistance(b) >0)
-   {
-     ret[l] +=(["WGS_DLAT": tmp[l]->WGS_DLAT ]);
-     ret[l] +=(["WGS_DLONG": tmp[l]->WGS_DLONG ]);
-     ret[l] +=(["NAME": nav[l]->NAME]);
-     ret[l] +=(["FREQ": nav[l]->FREQ ]);
-     ret[l] +=(["STATE_PROV": nav[l]->STATE_PROV]);
-     ret[l] +=(["ICAO": nav[l]->ICAO ]);
-     ret[l] +=(["TYPE": nav[l]->TYPE ]);
-     ret[l] +=(["ARPT_ICAO": nav[l]->ARPT_ICAO ]);
-
-   }
-   }
-  }
-  return ret;
-}
 
 
 
-mapping PosFinder(string icao, float  tc,float dist,mapping db)
-{
-/* this function calculates the position given by startpoint with distance and heading*/
-
- float dlat =(float) db[icao]->lat;
- float dlon =(float) db[icao]->long;
 
 
-return PosFinder2(dlat,dlon,tc,dist,db);
-}
-mapping PosFinder2(float dlat,float dlon, float  tc,float dist,mapping db)
-{
-
-
-float pi=3.1415926535;
-dlat = (pi/180)*dlat; /* dlat To Radians */
-dlon = (pi/180)*dlon; /* dlon To Radians */
-tc= (pi/180)*tc; /*course to radians */
-dist =  (dist*pi/(180*60));
-
-
-if(dlat >0) dlat=asin(sin(dlat)*cos(dist)+cos(dlat)*sin(dist)*cos(tc));
-if(dlat <0) dlat=asin(sin(dlat)*cos(dist)-cos(dlat)*sin(dist)*cos(tc));
-if(dlon >0) dlon=dlon+asin(sin(tc)*sin(dist)/cos(dlat));
-if(dlon <0) dlon=dlon-asin(sin(tc)*sin(dist)/cos(dlat));
-
-
-mapping ret=([]);
-
-ret["rlon"] = dlon;
-ret["rlat"] = dlat;
-ret["WGS_DLAT"] = (180/pi)*dlat;
-ret["WGS_DLONG"] = (180/pi)*dlon;
-return ret;
-}
-
-
-string get_codes(string c)
-{
- mapping ini = read_setings("settings.ini");
- mapping codes = find_codes(c);
-
- /*parse template*/
- string tpl = Stdio.FILE(ini->HTMLDIR+"/"+ini->FINDER_RESTPL)->read();
- string x="";
- sscanf(tpl, "%*s{LIST}%[^{LIST}]",string tpl1);
- foreach (indices(codes), string l) x += replace(replace(tpl1,"%airport%",codes[l]),"%icao%",l);
- x = replace(replace(x,"%airport%",""),"%icao%","");
- string t1 = sprintf ("{LIST}%s{LIST}",tpl1);
- string t2 = replace(tpl,t1,x);
-return t2;
-}
-
-mapping find_codes(string c)
-{
-  mapping ini = read_setings("settings.ini");
-  mapping ret=([]);
-  mapping DB = OpenDatabase("spt");
-
-  foreach(indices(DB), string l)
-   {
-   if( (string) DB[l]->id[0..1] == c) ret[l] =  replace(replace(DB[l]->name,"\n",""),"\r","");
-
-  }
-return ret;
-}
 
 
 

@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
 <head>
-<title>FLIGHT NAVIGATION</title>
+<title>START: FLIGHT NAVIGATION PLANER</title>
   <script language="javascript"  type="text/javascript">
    <!--
      var win=null;
@@ -37,9 +37,9 @@
     <center>
 
 
- <font face=Verdana size=10 color=#000000>FNP|RVSC</font>
+ <font face=Verdana size=10 color=#000000>FNP</font>
                <br><br><br><br>
-<form action="/RVSC/route">
+<form action="/R/">
 <table  valign="top" border="0" cellspacing="0" cellpadding="0" height="">
 <tr><td><font face=Verdana size=2 color=#000000>FROM (ICAO code)&nbsp;</td><td><input type="text" value ="%PRE_FROM%" name="from" size="4" maxlength="4"></td></tr>
 <tr><td><font face=Verdana size=2 color=#000000>TO (ICAO code)</td><td><input type="text" name="to" value ="%PRE_TO%" size="4" maxlength="4"></td></tr>

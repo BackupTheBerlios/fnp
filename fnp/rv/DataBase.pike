@@ -1,6 +1,8 @@
-mapping OpenDatabase(string f)
-{
 
+
+mapping OpenDatabase(string f)
+
+{
  array fx = (Gz.File("db/apt","rb")->read())/"\n";
 
   mapping db=([]);
@@ -32,16 +34,26 @@ mapping read_setings(string f)
    array t = l/"=";
    ret[replace(t[0],"S_","")] = replace(replace(t[1],"\n",""),"\r","");
    }
-  }
-  return ret;
+   if(l[0..2] == "DB_")
+   {
+   array t = l/"=";
+   ret[replace(t[0],"DB_","")] = replace(replace(t[1],"\n",""),"\r","");
+   }
+
+   if(l[0..3] == "TPL_")
+   {
+   array t = l/"=";
+   ret[replace(t[0],"TPL_","")] = replace(replace(t[1],"\n",""),"\r","");
+   }
+
+	}
+	return ret;
  }
-string serv_file(string file)
- {
-  mapping ini = read_setings("settings.ini");
-  file = sprintf("%s/%s",ini->HTMLDIR,basename(file));
-  if(Stdio.exist(file))  return Stdio.FILE(file)->read();
-  return "404";
- }
+
+
+
+
+
 
  mapping Load_AC_DataBase()
 {
