@@ -1,12 +1,13 @@
 @echo off
 REM ###################################################
-REM ## Great Circle Distance and Course Calculator   ##
-REM ## Copyright (C) 2002,2003,2004 by Blutorgel.net ##
-REM ## Pike: http://pike.ida.liu.se/                 ##
+REM ## FNP | RVSP FLIGHT NAVIGATION PLANER           ##
+REM ## (C) 2002,2003,2004 by http://fnp.berlios.de   ##
+REM ## This Software is released under the GNU       ##
+REM ## General Public License (GPL).                 ##
 REM ###################################################
 
 
-TITLE Great Circle Distance and Course  Calculator
+TITLE FNP : RVSP FLIGHT NAVIGATION PLANER
 
 IF EXIST c:\rvsc\pike\pike\7.4.31\bin\pike.exe  (
     c:\rvsc\pike\pike\7.4.31\bin\pike.exe c:\rvsc\server.pike
