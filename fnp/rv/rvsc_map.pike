@@ -20,8 +20,7 @@ string rvsc_map(mapping query)
    float s2 =  (float) GetICAOdata(from,DB)->long;
    float e1 =  (float) GetICAOdata(to,DB)->lat;
    float e2 =  (float) GetICAOdata(to,DB)->long;
-   float map_w = 330.0;
-   float map_h = 448.0;
+
 
     mapping start = st(s1,s2,55.0,48.0,6.0,15.0,map_w,map_h);
     mapping end = st(e1,e2,55.0,48.0,6.0,15.0,map_w,map_h);

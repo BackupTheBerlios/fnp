@@ -116,3 +116,25 @@ mapping OpenDatabase_NAV()
  }
 return db;
 }
+
+
+mapping OpenDatabase_WPT()
+{
+ array fx = (Gz.File("db/wpt","rb")->read())/"\n";
+ mapping db=([]);
+ foreach(fx,string l)
+  {
+   array x = l/"\t";
+	 if(sizeof(l) >20)
+   {
+	 	 db[x[0]] +=([
+		 	"WGS_DLAT": 	replace(replace(x[14]	,"\n",""),"\r",""),
+     	"WGS_DLONG": 	replace(replace(x[16]	,"\n",""),"\r",""),
+     	"DESC": 			replace(replace(x[5]	,"\n",""),"\r",""),
+     	"ICAO":				replace(replace(x[6]	,"\n",""),"\r",""),
+     	"TYPE": 			replace(replace(x[4]	,"\n",""),"\r","")
+			]);
+	}
+ }
+return db;
+}

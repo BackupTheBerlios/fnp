@@ -11,7 +11,7 @@ int debug(mixed d)
 
 mapping File_Server_Parsed(string file,string query,string tpl,mapping ini,string file_type) /* Query and Database */
 {
-debug("open file "+file);
+//debug("open file "+file);
   file = sprintf("%s/%s",ini->HTMLDIR,basename(file));
 	if(!Stdio.exist(file)) /* 404? */
 		{ debug("open file ERROR "+file); mapping ret = (["data" : "404" ,"type" : "text/html", "server": VERSION  ]); return ret;}
@@ -20,7 +20,7 @@ debug("open file "+file);
 
 	if(tpl == 0 ) /* send the file unparsed ..*/
 		{
-			debug("open file (set header)  "+"CT-"+upper_case(file_type) );
+			// debug("open file (set header)  "+"CT-"+upper_case(file_type) );
 			mapping ret = (["data" : in ,"type" : ini["CT-"+upper_case(file_type)], "server": VERSION  ]);
 			return ret;
 		}
@@ -109,16 +109,10 @@ mapping time_now()
 
 string start_session(mapping query)
 {
-
-string my_name = my_crypt(sprintf("%d%O",time(),query));
-Stdio.write_file(combine_path(ini->SESSIONDIR,my_name),encode_value_canonic(query));
-Stdio.write_file(combine_path(ini->SESSIONDIR,my_name+".log"),sprintf("[%s]\t starting session\n",time_now()->time));
-
-debug("starting session "+my_name);
-
+ string my_name = my_crypt(sprintf("%d%O",time(),query));
+  Stdio.write_file(combine_path(ini->SESSIONDIR,my_name),encode_value_canonic(query));
+  Stdio.write_file(combine_path(ini->SESSIONDIR,my_name+".log"),sprintf("[%s]\t starting session\n",time_now()->time));
 return my_name;
-
-
 }
 
 
@@ -157,7 +151,7 @@ string Push_Log_Done(string sess)
 	string log ="DONE";
 	sess =combine_path(ini->SESSIONDIR,sess+".log");
 	Stdio.write_file(sess,log);
-
+return 0;
 }
 
 
@@ -276,6 +270,59 @@ mapping navid2(float lat,float long, float range,mapping db,mapping nav)
   }
   return ret;
 }
+
+
+
+
+
+mapping waypoint(string icao, float range,mapping db,mapping wpt)
+{
+  float lat =(float) db[icao]->lat;
+  float long =(float)db[icao]->long;
+  return waypoint2( lat, long,  range, db,wpt);
+}
+
+
+mapping waypoint2(float lat,float long, float range,mapping db,mapping wpt)
+{
+
+  mapping tmp=([]);
+  mapping ret=([]);
+
+  foreach(indices(wpt), string l)
+  {
+
+    if( (float) wpt[l]->WGS_DLONG > long - range && (float) wpt[l]->WGS_DLONG < long + range)
+    { tmp[l] +=(["WGS_DLONG": (float) wpt[l]->WGS_DLONG ]);}
+
+    if( (float) wpt[l]->WGS_DLAT > lat - range && (float) wpt[l]->WGS_DLAT < lat + range)
+    {tmp[l] +=(["WGS_DLAT": (float) wpt[l]->WGS_DLAT ]);}
+
+  }
+
+ foreach(indices(tmp),string l )
+  {
+   if(tmp[l]->WGS_DLAT && tmp[l]->WGS_DLONG )
+   {
+
+    object a=Geo(tmp[l]->WGS_DLAT,tmp[l]->WGS_DLONG);
+    object b=Geo(lat,long);
+    if(a->GCDistance(b) >0)
+   {
+     ret[l] +=(["WGS_DLAT": tmp[l]->WGS_DLAT ]);
+     ret[l] +=(["WGS_DLONG": tmp[l]->WGS_DLONG ]);
+     ret[l] +=(["DESC": wpt[l]->DESC]);
+     ret[l] +=(["ICAO": wpt[l]->ICAO ]);
+     ret[l] +=(["TYPE": wpt[l]->TYPE ]);
+
+   }
+   }
+  }
+  return ret;
+}
+
+
+
 
 
 

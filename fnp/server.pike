@@ -28,6 +28,7 @@ void  handle_request(Protocols.HTTP.Server.Request request)
   mapping ret =([]);
   string access ="NO";
   string file = request->not_query;
+	int done;
   array file_ext = request->not_query/".";
 
   /*CHECK CONNECT PERMISSIONS*/
@@ -52,43 +53,36 @@ void  handle_request(Protocols.HTTP.Server.Request request)
 		{
 		case "/"		: /* startpage (index.html :-) */
 									ret = File_Server_Parsed(ini->STARTPAGE,request->query,"STARTPAGE",ini,"html");
+									done =1;
 									break;
 
 		case "/R/"	: /*Start New Route*/
 									mapping FNP =Start_FNP(query,ini);
 									ret = (["data" : FNP->data, "type" : "text/html" ]);
+									done =1;
 									break;
 
 		}
 
 		if(file[0..3] == "/FP_") /* Process Route */
 		{
-		debug(file);
 			mapping Start_FNP_Holding =Start_FNP_Holding(file,ini);
 			ret = (["data" : Start_FNP_Holding->data, "type" : "text/html" ]);
+			done =1;
 		}
 		if(file[0..4] == "/LOG_") /* Logfile Process */
 		{
 		string sess = replace(file,"/LOG_","");
 		mapping show_log = show_log(sess);
 		ret = (["data" :show_log->data, "type" : show_log->type ]);
+		done =1;
 		}
 		if(file[0..5] == "/CALL_") /* Call Process */
 		{
 		string sess = replace(file,"/CALL_","");
-		FNP_Route(sess,ini);
+		object t =Thread.thread_create( lambda() {FNP_Route(sess,ini); } );
 		ret = (["data" : "0", "type" : "text/plain" ]);
-		}
-
-
-
-		switch(file_ext[sizeof(file_ext)-1]) /* SURF THE REST (STATIC FILES ) */
-		{
-			case "jpg"	:	ret = File_Server_Parsed(file,request->query,0,ini,"jpg"	); 	break;
-			case "gif"	:	ret = File_Server_Parsed(file,request->query,0,ini,"gif"	);	break;
-			case "html"	:	ret = File_Server_Parsed(file,request->query,0,ini,"html"	);	break;
-  		case "css"	:	ret = File_Server_Parsed(file,request->query,0,ini,"css"	);	break;
-  		case "js"		:	ret = File_Server_Parsed(file,request->query,0,ini,"js"		);	break;
+		done =1;
 		}
 
 		if(file[0..5] == "/PLAN_") /* PlanPages Process */
@@ -97,9 +91,21 @@ void  handle_request(Protocols.HTTP.Server.Request request)
 		if(file_ext[1] == "jpg") ret = (["data" : ServPlanFilePass(file,ini),  "type" : "image/jpeg" ]);
 		if(file_ext[1] == "gif") ret = (["data" : ServPlanFilePass(file,ini),  "type" : "image/gif"  ]);
 		if(file_ext[1] == "fnp") ret = (["data" : ServPlanFileParse(file,ini), "type" : "text/html"  ]);
-
-
+		done =1;
 		}
+
+		if(done != 1)
+		{
+			switch(file_ext[sizeof(file_ext)-1]) /* SURF THE REST (STATIC FILES ) */
+			{
+			case "jpg"	:	ret = File_Server_Parsed(file,request->query,0,ini,"jpg"	); 	break;
+			case "gif"	:	ret = File_Server_Parsed(file,request->query,0,ini,"gif"	);	break;
+			case "html"	:	ret = File_Server_Parsed(file,request->query,0,ini,"html"	);	break;
+  		case "css"	:	ret = File_Server_Parsed(file,request->query,0,ini,"css"	);	break;
+  		case "js"		:	ret = File_Server_Parsed(file,request->query,0,ini,"js"		);	break;
+			}
+		}
+
 
 
 

@@ -1,6 +1,7 @@
 mapping DB = OpenDatabase("globalairports");  /* Load database airports */
 mapping Aircrafts = Load_AC_DataBase();
 mapping nav= OpenDatabase_NAV();
+mapping wpt= OpenDatabase_WPT();
 
 mapping Start_FNP(mapping query,mapping ini)
 {
@@ -124,23 +125,34 @@ Push_Log(sess,sprintf("Distance: %s, Heading: %s",output["T_DIST_NM"],output["T_
 
 	 foreach(indices(Alt),string l) { output["Alt_"+l] =(["lat":	Alt[l]->lat, "long": Alt[l]->long, "dist":Alt[l]->dist ]); }
 
-	mapping pointer	= ([]); mapping NavID		=	([]);
+	mapping pointer	= ([]); mapping NavID		=	([]); mapping WayPoints		=	([]);
 
 	for(int i=1;i<gdist*0.54/25;i++)
    {
 	 pointer = PosFinder(from,a->GCAzimuth(b),(float) i*25 ,DB);
      Alt += alt2(pointer->WGS_DLAT,pointer->WGS_DLONG,0.300,DB);
 		NavID += navid2(pointer->WGS_DLAT,pointer->WGS_DLONG,0.300,DB,nav);
+		WayPoints += waypoint2(pointer->WGS_DLAT,pointer->WGS_DLONG,0.100,DB,wpt);
+
   }
 		NavID += navid2((float) m_to->lat, (float) m_to->long,0.500,DB,nav);
+	WayPoints += waypoint2(pointer->WGS_DLAT,pointer->WGS_DLONG,0.100,DB,wpt);
+
+
 
 	Push_Log(sess,sprintf("Found %d En-Route Alternates",sizeof(indices(Alt))));
 	 foreach(indices(Alt),string l) { output["Alt_"+l] =(["lat":	Alt[l]->lat, "long": Alt[l]->long, "dist":Alt[l]->dist ]); }
 
-	Push_Log(sess,sprintf("Found %d En-Route NavID's",sizeof(indices(NavID))));
+
+	Push_Log(sess,sprintf("Found %d En-Route Waypoints",sizeof(indices(WayPoints))));
+		foreach(indices(WayPoints),string l) { output["Wpt_"+l] = (["lat":	WayPoints[l]->WGS_DLAT, "long": WayPoints[l]->WGS_DLONG, "desc":WayPoints[l]->DESC,
+																					"icao": WayPoints[l]->ICAO,  "type": WayPoints[l]->TYPE]);  }
+
+ Push_Log(sess,sprintf("Found %d En-Route NavID's",sizeof(indices(NavID))));
 
 	 foreach(indices(NavID),string l) { output["Nav_"+l] =(["name":	NavID[l]->NAME, "type": NavID[l]->TYPE, "lat": NavID[l]->WGS_DLAT,
 																	"long": NavID[l]->WGS_DLONG, "freq":NavID[l]->FREQ, "arpt": NavID[l]->ARPT_ICAO , "icao": NavID[l]->ICAO ]); }
+
 
 
   		string alternate_replace =""; string imgmap =""; string altname ="";
@@ -167,11 +179,26 @@ Push_Log(sess,sprintf("Distance: %s, Heading: %s",output["T_DIST_NM"],output["T_
      int X1=(int)start->X+5;
      if(Y1+10 > 330.0) Y1=Y1-30;
      if(X1+10 > 448.0) X1=X1-30;
-     imgmap += sprintf("<area shape='circle' coords='%s,%s,3' href='javascript:void(0);'"+
+     imgmap += sprintf("<area shape='circle' coords='%s,%s,2' href='javascript:void(0);'"+
                             "onmouseover=\"return overlib('<b>NAVID :</b>%s / %s (Type: %s)<br/>NAME: %s<br/>FREQ:%s<br/>AIRPORT: %s');\""+
                             "onmouseout='return nd();'>\n", (string)Y1,(string)X1,l, (string)  NavID[l]->icao,(string) NavID[l]->type,
 														(string)  NavID[l]->name,	(string)NavID[l]->freq, (string) NavID[l]->arpt );
 		}
+
+
+		foreach(indices(WayPoints),string l )/* IMAGEMAP  (NavIDs) */
+    {
+     mapping start = st(WayPoints[l]->WGS_DLAT,WayPoints[l]->WGS_DLONG,55.0,48.0,6.0,15.0,330.0,448.0);
+     int Y1=(int)start->Y+2;
+     int X1=(int)start->X+3;
+     if(Y1+10 > 330.0) Y1=Y1-30;
+     if(X1+10 > 448.0) X1=X1-30;
+     imgmap += sprintf("<area shape='circle' coords='%s,%s,2' href='javascript:void(0);'"+
+                            "onmouseover=\"return overlib('<b>WAYPOINT:</b>%s  (Type: %s)<br/>DESC: %s<br/>AIRPORT: %s');\""+
+                            "onmouseout='return nd();'>\n", (string)Y1,(string)X1,l, (string)  WayPoints[l]->TYPE ,(string) WayPoints[l]->DESC,
+														(string)  WayPoints[l]->ICAO);
+		}
+
 
 		output["T_IMGMAP"] = imgmap;
 		output["T_ALTERNATE"] = alternate_replace;
@@ -201,6 +228,11 @@ Push_Log(sess,"Scanning map.");
       img=img->paste_alpha_color(Image.Font()->write(to),0,0,255,Y2+4,X2+4 );   /*ICAO name to */
       img=img->paste_alpha_color(Image.Font()->write(time_now()->date+" "+time_now()->time),0,0,0,1,1 ); /*time / date info*/
       img=img->paste_alpha_color(Image.Font()->write(from + "-" + to),0,0,0,1,12 );   /*infotext*/
+			img=img->paste_alpha_color(Image.Font()->write("Alternate Airports"),255,0,255,1,24 );   /*infotext*/
+			img=img->paste_alpha_color(Image.Font()->write("NavID's"),0,255,0,1,36 );   /*infotext*/
+			img=img->paste_alpha_color(Image.Font()->write("WayPoints"),0,0,255,1,48 );   /*infotext*/
+
+
 
 
 /* ALTERNATES */
@@ -225,8 +257,18 @@ Push_Log(sess,"Scanning map.");
           int X1=(int)start->X+5;
           if(Y1+10 > map_w) Y1=Y1-30;
           if(X1+10 > map_h) X1=X1-30;
-          img->circle(Y1,X1,1,1,0,255,0);
+          img->circle(Y1,X1,2,2,0,255,0);
        	}
+      foreach(indices(WayPoints),string l )
+        {
+        mapping start = st(WayPoints[l]->WGS_DLAT,WayPoints[l]->WGS_DLONG,55.0,48.0,6.0,15.0,map_w,map_h);
+          int Y1=(int)start->Y+2;
+          int X1=(int)start->X+3;
+          if(Y1+10 > map_w) Y1=Y1-30;
+          if(X1+10 > map_h) X1=X1-30;
+          img->circle(Y1,X1,2,2,0,0,255);
+       	}
+
 
 
 
@@ -236,13 +278,13 @@ Push_Log(sess,"Wrote map.");
 
 
 Stdio.write_file(combine_path(ini->SESSIONDIR,sess+".fnp.out"),encode_value_canonic(output));
+
+sleep(2);
 Push_Log_Done(sess);
+
 return "done";
 
 }
-
-
-
 
 string ServPlanFilePass(string file,mapping ini)
 {
