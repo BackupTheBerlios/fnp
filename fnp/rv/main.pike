@@ -44,6 +44,7 @@ void  handle_request(Protocols.HTTP.Server.Request request)
   if(file == "/") ret = Stdio.FILE(ini->HTMLDIR+"/"+ini->STARTPAGE)->read();  type = "text/html";
   if(file_ext[sizeof(file_ext)-1] == "jpg") { ret = "BILD"; type = "text/html"; }
   if(file_ext[sizeof(file_ext)-1] == "html") {ret = "html"; type = "text/html"; }
+  
   if(file == "/RVSC/route") { ret = rvsc(query); type = "text/html";  }
   if(file == "/RVSC_MAP/")  {ret = rvsc_map(query); type = "image/jpeg";}
   if(file == "/CODEFINDER/")
@@ -53,6 +54,17 @@ void  handle_request(Protocols.HTTP.Server.Request request)
     else
      {ret = Stdio.FILE(ini->HTMLDIR+"/finder.tpl")->read(); type = "text/html";}
    }
+
+/* ok now serv the static files */   
+
+  if(file_ext[sizeof(file_ext)-1] == "jpg") { ret = serv_file(file); type = "text/html"; }
+  if(file_ext[sizeof(file_ext)-1] == "html") {ret = serv_file(file);  type = "text/html"; }
+  if(file_ext[sizeof(file_ext)-1] == "css") {ret = serv_file(file);    type = "application/x-javascript"; }
+  if(file_ext[sizeof(file_ext)-1] == "js") {ret = serv_file(file);    type = "application/x-javascript"; }
+  
+  
+  
+
 
  string parsed_ret =  preparser(ret,request->query);  
  request->response_and_finish(([ "data": parsed_ret, "type":type ]));
@@ -180,13 +192,26 @@ string  router(string from,string to, mapping DB)
      tpl = replace(tpl,t1,  t2);
     }
    string alternate_replace ="";
+   string imgmap ="";
+   string altname ="";
    foreach(indices(alternate),string l )
     {
+     altname = replace(replace(GetICAOdata(l,DB)->name,"\n",""),"\r","");
      alternate_replace += sprintf ("<tr><td>%s</td><td>%s</td><td>%O nm</td></tr>",
-                                  l,replace(replace(GetICAOdata(l,DB)->name,"\n",""),"\r",""),
+                                  l,altname,
                                   alternate[l]->dist);
+
+      /* IMAGEMAP */
+      mapping start = st(alternate[l]->lat,alternate[l]->long,55.0,48.0,6.0,15.0,330.0,448.0);
+      int Y1=(int)start->Y;
+      int X1=(int)start->X;
+      if(Y1+10 > 330.0) Y1=Y1-30;
+      if(X1+10 > 448.0) X1=X1-30;
+      imgmap += sprintf("<area shape='circle' coords='%s,%s,3' href='/RVSC/route?from=%s&to=%s' onmouseover=\"return overlib('%s<br/>%s<br/>distance:%s nm');\" onmouseout='return nd();'>\n",(string)Y1,(string)X1,output->ICAO1,l,l,altname,(string)alternate[l]->dist);
     }
    tpl = replace(tpl,"{ALTERNATE}",alternate_replace);
+   tpl = replace(tpl,"{IMGMAP}",imgmap);
+   
    write("[%s %s] process route from %O to %O for %O \n",time_now()->date,time_now()->time,output->ICAO1,output->ICAO2,sprintf("%02s",ini->NAME));
 return tpl;
 }

@@ -1,18 +1,5 @@
 
-mapping st(float lat,float long,float N,float S, float W,float O,float width,float height)
-{
-    mapping pos=([]);
-    pos["argv"] = sprintf("lat=%O, long=%O, N=%O,S=%O W=%O, O=%O, width=%O, height=%O",lat,long,N,S,W,O,width,height);
-    pos["geo_breite"] =  O-W;
-    pos["Y1"] =  pos->geo_breite/width;
-    pos["Y2"] = long-W;
-    pos["Y"] =pos->Y2/pos->Y1;
-    pos["geo_hoehe"] =  N-S;
-    pos["X1"] =  pos->geo_hoehe/height;
-    pos["X2"] =N-lat;
-    pos["X"] =pos->X2/pos->X1;
- return pos;
-}
+
 
 string rvsc_map(mapping query)
 {
@@ -69,8 +56,8 @@ mapping alt = alt(to,1.000,DB);
           int X1=(int)start->X;
           if(Y1+10 > map_w) Y1=Y1-30;
           if(X1+10 > map_h) X1=X1-30;
-          img->circle(Y1,X1,2,2,255,0,255);
-          img->circle(Y1,X1,1,1,255,0,255);
+          img->circle(Y1,X1,3,3,255,0,255);
+          
         }
 
 

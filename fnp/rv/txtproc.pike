@@ -80,3 +80,26 @@ int CheckInputICAO(string icao)
    return (string) tpl;
 
  }
+
+ string serv_file(string file)
+ {
+  mapping ini = read_setings("settings.ini");
+  file = sprintf("%s/%s",ini->HTMLDIR,basename(file));
+  if(Stdio.exist(file))  return Stdio.FILE(file)->read();
+  return "404";
+ }
+
+ mapping st(float lat,float long,float N,float S, float W,float O,float width,float height)
+{
+    mapping pos=([]);
+    pos["argv"] = sprintf("lat=%O, long=%O, N=%O,S=%O W=%O, O=%O, width=%O, height=%O",lat,long,N,S,W,O,width,height);
+    pos["geo_breite"] =  O-W;
+    pos["Y1"] =  pos->geo_breite/width;
+    pos["Y2"] = long-W;
+    pos["Y"] =pos->Y2/pos->Y1;
+    pos["geo_hoehe"] =  N-S;
+    pos["X1"] =  pos->geo_hoehe/height;
+    pos["X2"] =N-lat;
+    pos["X"] =pos->X2/pos->X1;
+ return pos;
+}

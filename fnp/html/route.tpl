@@ -9,10 +9,13 @@
   </style>
  </head>
  <body bgcolor="#FFFFFF" text="#000000" link="blue" vlink="red" alink="red" leftmargin=5 topmargin=5 marginheight="5" marginwidth="5">
-
+         
  <br>
   <center><font face=Verdana size=4 color=#999999><u>%ICAO1% (%NAME1%) - %ICAO2% (%NAME2%)</u></font><br>
   <br>
+   <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
+   <script language="JavaScript" src="overlib.js"></script>
+
 
  <table border=0 cellpadding="0" cellspacing="0">
   <tr>
@@ -56,7 +59,11 @@
    </td>
    <td valign=top>&nbsp;&nbsp;&nbsp;</td>
    <td valign=top>
-    <img src="/RVSC_MAP/?from=%ICAO1%&to=%ICAO2%" border=1>
+    <map name="maphits">
+    {IMGMAP}
+    </map>
+   
+    <img src="/RVSC_MAP/?from=%ICAO1%&to=%ICAO2%" width="330" height="448" border="1" alt="Karte" usemap="#maphits"> 
    </td>
   </tr>
  </table>
