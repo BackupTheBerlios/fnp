@@ -5,6 +5,8 @@
    <!--
     body { font-family: Verdana, arial, helvetica, sans-serif; font-size: 12px; }
     td   { font-family: Verdana, arial, helvetica, sans-serif; font-size: 12px; }
+		h1   { font-family: Verdana, arial, helvetica, sans-serif; font-size: 36px; color: #999999;}
+
    -->
   </style>
  	<script language="javascript"  type="text/javascript">
@@ -15,37 +17,63 @@
  </head>
 
  <body bgcolor="#FFFFFF" text="#000000" link="blue" vlink="red" alink="red" leftmargin=5 topmargin=5 marginheight="5" marginwidth="5">
- <table border=0 cellpadding="0" cellspacing="0" width=100%>
- <tr><td valign=top><br><br>
-  <a href="/">NEW</a><br><br>
-  <a href="http://fnp.berlios.de/">FNP HOME</a><br><br>
-  <a href="http://fnp.berlios.de/forum/list.php?f=1">FNP FORUM</a><br><br>
-  <a href="http://developer.berlios.de/docman/?group_id=1305">Documentation</a><br><br>
- </td>
- <td bgcolor=#999999>&nbsp;</td>
- <td >
-
-
-  <center><font face=Verdana size=4 color=#999999><u>%ICAO1% (%NAME1%) - %ICAO2% (%NAME2%)</u></font><br />
-   <font face=Verdana size=3 color=#999999>%AC-REG% / %AC-TYPE% <br>
-  
-  <br>
    <div id="overDiv" style="position:absolute; visibility:hidden; z-index:100;"></div>
    <script language="JavaScript" src="overlib.js"></script>
 
 
- <table border=0 cellpadding="0" cellspacing="0">
-  <tr>
-   <td valign=top>
+	<center>
+	<span style="font-family: Verdana, arial, helvetica, sans-serif; font-size: 36px; color: #999999; ">%ICAO1% (%NAME1%) - %ICAO2% (%NAME2%)</span>
+	<br />
+  <font face=Verdana size=3 color=#999999>%AC-REG% ( %AC-TYPE% )<br>
 
-     Date/Time: %DATE% %TIME%
-    <hr><b>DISTANCE:</b><br>
-    <table>
-     <tr><td>nautical miles</td><td>%DISTNM%</td></tr>
-     <tr><td>Land miles</td><td> %DISTMI%</td></tr>
-     <tr><td>kilometers</td><td>%DISTKM%</td> </tr>
-    </table>
+	<br><br><br>
 
+<!-- INFORMATIONS ROWS -->
+
+<table border=1 cellpadding="0" cellspacing="0"><tr><td><br>
+<table border=0 cellpadding="0" cellspacing="0" width=600>
+ <tr>
+<!-- END FIRST ROW -->
+	<td valign=top width=200 align=center>
+		<b>DIRECT DISTANCE:</b><hr width=90%>
+    <table><tr><td>%DISTNM%</td><td> nautical miles</td></tr><tr><td>%DISTMI%</td><td> Land miles</td></tr><tr><td>%DISTKM%</td><td> kilometers</td> </tr></table>
+	</td>
+	<td bgcolor="#999999"><img width="1" src="/b.gif" height="1"></td>
+  <td valign=top width=200 align=center>
+  	<center><b>EN-ROUTE DISTANCE:</b></center><hr width=90%>
+    <table><tr><td>%ENDISTNM%</td><td> nautical miles</td></tr><tr><td>%ERDISTMI%</td><td> Land miles</td></tr><tr><td>%ERDISTKM%</td><td> kilometers</td> </tr>    </table>
+	</td>
+	<td bgcolor="#999999"><img width="1" src="/b.gif" height="1"></td>
+ 	<td valign=top width=200 align=center>
+ 		<b>FLIGHT TIME:</b><hr width=90%>
+    <table><tr><td> FIXME </td></tr></table>
+	</td>
+ </tr>
+<!-- END FIRST ROW -->
+<tr><td>&nbsp; </td><td><img width="1" src="/b.gif" height="1"></td> <td>&nbsp; </td><td><img width="1" src="/b.gif" height="1"></td><td>&nbsp; </td></tr>
+<!-- ROW 2 airport info -->
+	<td valign=top width=200 align=center>
+		<b>Runways %ICAO1%</b><hr width=90%>
+    <table>		%RWYS1% 		</table>
+	</td>
+	<td bgcolor="#999999"><img width="1" src="/b.gif" height="1"></td>
+  <td valign=top width=200 align=center>
+<b>Runways %ICAO2%</b><hr width=90%>
+    <table>		%RWYS2% 		</table>
+		</td>
+	<td bgcolor="#999999"><img width="1" src="/b.gif" height="1"></td>
+ 	<td valign=top width=200 align=center>
+ 		<b>Alternates</b><hr width=90%>
+    <table>%ALTERNATE%</table>
+	</td>
+ </tr>
+<!-- END ROW 2 -->
+
+
+	</table><br>
+	</td></tr></table>
+
+ <!--
     <hr><b>FLIGHTDATA:</b><br>
     <table>
      <tr><td>True Course</td><td> %HEADING%</td></tr>

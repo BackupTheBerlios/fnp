@@ -184,7 +184,6 @@ mapping alt2(float lat, float long ,float range,mapping db)
     object b=Geo(lat,long);
     if(a->GCDistance(b) >10)
     {
-		 
      ret[l] +=(["lat": tmp[l]->lat ]);
      ret[l] +=(["long": tmp[l]->long ]);
      ret[l] +=(["dist": (int)a->GCDistance(b) ]); /*runway informations missing.*/
@@ -223,29 +222,6 @@ return ret;
 
 
 
-string Get_Runways_Html(string id ,mapping rwy)
-{
-debug("rwy call with"+id);
-mapping sur = RWY_SUR();
-	string ret ="";
-	foreach(indices(rwy), string l)
-	{
-	if(rwy[l]->ID == id)
-		{
-
-		int low_id =(int) replace(replace(rwy[l]->RWY	,"L",""),"R","");
-		low_id = low_id -18;
-		//if(low_id[2..2] == "L") low_id =  replace(low_id	,"L",""); 	int low_id_l = (int) low_id-18; low_id = (string) low_id_l+"L";
-
-		string surface = sprintf("<a href=\"javascript:void(0);\" onmouseover=\"return overlib(\'%s\');\" onmouseout=\"return nd();\">%s</a>",
-															sur[rwy[l]->SURFACE],rwy[l]->SURFACE);
-
-		ret +=sprintf("<tr><td>%d/%s</td><td>%s x %s ft.</td><td>%s</td></tr> \n",low_id,rwy[l]->RWY,rwy[l]->LENGHT, rwy[l]->WIDHT,surface);
-		}
-	}
-return ret;
-
-}
 mapping navid(string icao, float range,mapping db,mapping nav)
 {
   float lat =(float) db[icao]->lat;

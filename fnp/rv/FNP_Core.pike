@@ -2,7 +2,6 @@ mapping DB = OpenDatabase("globalairports");  /* Load database airports */
 mapping Aircrafts = Load_AC_DataBase();
 mapping nav= OpenDatabase_NAV();
 mapping wpt= OpenDatabase_WPT();
-mapping rwy= OpenDatabase_RWY();
 
 mapping Start_FNP(mapping query,mapping ini)
 {
@@ -90,12 +89,6 @@ if(ini->DEMO == "YES") { from =ini->DEMO_F; to =ini->DEMO_T;}
 	 output["T_LONG1"] 			=	(string) 	m_from->long;
    output["T_LAT2"] 			= (string)	m_to->lat;
    output["T_LONG2"] 			= (string)	m_to->long;
-	 output["T_DAID1"] 			= (string)	m_from->id;
-   output["T_DAID2"] 			= (string)	m_to->id;
-	 output["T_RWYS1"]			= (string)	Get_Runways_Html((string) m_from->id,rwy);
-	 output["T_RWYS2"]			= (string)	Get_Runways_Html((string) m_to->id,rwy);
-
-
 
    object a							=	Geo( (float) m_from->lat, (float) m_from->long);
    object b							=	Geo( (float) m_to->lat  , (float) m_to->long);
@@ -128,7 +121,7 @@ Push_Log(sess,sprintf("Distance: %s, Heading: %s",output["T_DISTNM"],output["T_H
 	 Push_Log(sess,sprintf("Flighttime: %s min.",output["T_FLIGHTTIME"]));
 
 
-	  mapping Alt = alt(output["T_ICAO2"],2.000,DB);
+	  mapping Alt = alt(output["T_ICAO2"],1.000,DB);
 	Push_Log(sess,sprintf("Found %d Alternates for %s",sizeof(indices(Alt)),output["T_ICAO2"]));
 
 	 foreach(indices(Alt),string l) { output["Alt_"+l] =(["lat":	Alt[l]->lat, "long": Alt[l]->long, "dist":Alt[l]->dist ]); }
@@ -162,31 +155,23 @@ Push_Log(sess,sprintf("Scanning Navigation Database ... "));
 	 foreach(indices(NavID),string l) { output["Nav_"+l] =(["name":	NavID[l]->NAME, "type": NavID[l]->TYPE, "lat": NavID[l]->WGS_DLAT,
 																	"long": NavID[l]->WGS_DLONG, "freq":NavID[l]->FREQ, "arpt": NavID[l]->ARPT_ICAO , "icao": NavID[l]->ICAO ]); }
 
-  		string alternate_replace =""; string imgmap =""; string altname ="";string alternate_replace_tmp ="";
+  		string alternate_replace =""; string imgmap =""; string altname ="";
 
 			array i = indices(Alt); array v = values(Alt)->dist; sort(v,i);
 			for(int x; x<sizeof(i); x++)
 			{ string l = i[x];
      	altname = replace(replace(GetICAOdata(l,DB)->name,"\n",""),"\r","");
-
-			if(x<7 && x%2 ==0) {
-				if(Alt[i[x+1]]->dist) { string l1 = i[x+1];  alternate_replace_tmp += sprintf ("<td><a href=\"javascript:Apt_info(\'%s\');\">%s</a></td><td>%d nm</td></tr>",l1,l1,Alt[l1]->dist); }
-				alternate_replace += sprintf ("<tr><td><a href=\"javascript:Apt_info(\'%s\');\">%s</a></td><td>%d nm</td>%s</tr>",l,l,Alt[l]->dist,alternate_replace_tmp);
-				alternate_replace_tmp ="";
-				}
+     	alternate_replace += sprintf ("<tr><td>%s</td><td>%s</td><td>%O nm</td></tr>",l,altname,Alt[l]->dist);
       mapping start = st(Alt[l]->lat,Alt[l]->long,55.0,48.0,6.0,15.0,330.0,448.0);
-      int Y1=(int)start->Y+2;
-      int X1=(int)start->X+2;
+      int Y1=(int)start->Y;
+      int X1=(int)start->X;
       if(Y1+10 > 330.0) Y1=Y1-30;
       if(X1+10 > 448.0) X1=X1-30;
       imgmap += sprintf("<area shape='circle' coords='%s,%s,3' href='javascript:ALT(\"%s\");'"+
                         "onmouseover=\"return overlib('<b>AIRPORT:</b>%s<br/>%s<br/>distance:%s nm');\""+
                         "onmouseout='return nd();'>\n",
                         (string)Y1,(string)X1,l,l,altname,(string)Alt[l]->dist);
-
-			}
-
-
+   		}
 
 
 		foreach(indices(NavID),string l )/* IMAGEMAP  (NavIDs) */
@@ -206,8 +191,8 @@ Push_Log(sess,sprintf("Scanning Navigation Database ... "));
 		foreach(indices(WayPoints),string l )/* IMAGEMAP  (NavIDs) */
     {
      mapping start = st(WayPoints[l]->WGS_DLAT,WayPoints[l]->WGS_DLONG,55.0,48.0,6.0,15.0,330.0,448.0);
-     int Y1=(int)start->Y;
-     int X1=(int)start->X;
+     int Y1=(int)start->Y2;
+     int X1=(int)start->X2;
      if(Y1+10 > 330.0) Y1=Y1-30;
      if(X1+10 > 448.0) X1=X1-30;
      imgmap += sprintf("<area shape='circle' coords='%s,%s,2' href='javascript:WPT(\"%s\");'"+
@@ -259,8 +244,8 @@ Push_Log(sess,"Scanning map.");
 			foreach(indices(Alt),string l )
         {
          mapping start = st(Alt[l]->lat,Alt[l]->long,55.0,48.0,6.0,15.0,map_w,map_h);
-          int Y1=(int)start->Y+2;
-          int X1=(int)start->X+2;
+          int Y1=(int)start->Y;
+          int X1=(int)start->X;
           if(Y1+10 > map_w) Y1=Y1-30;
           if(X1+10 > map_h) X1=X1-30;
           img->circle(Y1,X1,2,2,255,0,255);
@@ -351,7 +336,7 @@ string FNP_KLick_Route(string sess,mapping query,mapping ini)
 
 		int hop = sizeof(indices(route))+1;
 
- 		route[1] = ([ "hop": 0,"type":"Airport","ident": output["T_ICAO1"], "lat": output["T_LAT1"],
+ route[1] = ([ "hop": 0,"type":"Airport","ident": output["T_ICAO1"], "lat": output["T_LAT1"],
 									"long": output["T_LONG1"], "desc": "Departure","name":output["T_NAME1"] ]);
 
 
@@ -388,7 +373,7 @@ string FNP_KLick_Route(string sess,mapping query,mapping ini)
 
 		if(query->dest && query->type == "del" && sizeof(query->dest) !=0 && last_ident != query->dest && query->dest != 1 && query->dest != last_ident)
 		{
-		 route = FNP_KLick_Route_Delete_Hop(route,(string)query->dest);
+		route = FNP_KLick_Route_Delete_Hop(route,query->dest);
 		}
 
 
@@ -442,7 +427,7 @@ Stdio.write_file(combine_path(ini->SESSIONDIR,sess+".route"),encode_value_canoni
 		 if(dist_nm ==0) this_dist = "&nbsp;-";
 		 string this_link = "&nbsp;";
 
-	   if(i != sizeof(indices(route))  && i != 1) this_link = (string) sprintf("<a href=\"javascript:DEL(\'%d\');\">Delete</a>",i);
+	   if(i == sizeof(indices(route)) - 1 && i != 1) this_link = (string) sprintf("<a href=\"javascript:DEL(\'%d\');\">Delete</a>",i);
 
   	 if(this_id == this_name) this_name ="";
 		 if(this_id == this_desc) this_desc ="";
@@ -451,9 +436,8 @@ Stdio.write_file(combine_path(ini->SESSIONDIR,sess+".route"),encode_value_canoni
 	                          this_hop,this_type,this_id,this_name,this_desc,this_dist,this_link );
 
 	}
-
 	tpl=replace(tpl,"%ROUTE-MAPIING%",route_replace);
-	tpl=replace(tpl,"%RANDOM%", (string) random(9999));
+
 	return tpl;
 }
 
@@ -468,24 +452,21 @@ float FNP_KLick_Route_Calc_Dist(float lat1,float long1,float lat2,float long2)
 mapping FNP_KLick_Route_Delete_Hop(mapping x,string key)
 {
 	mapping ret =([]);
-	int i =1;
-	for(int p=1;p<sizeof(indices(x));p++)
+	int i=1;
+	foreach(indices(x),string p)
 	{
-
-	if((string)p != (string) key )
+	if((string)p != (string) key)
 		{
 		 ret[i] = ([
-      "desc": 	x[p]->desc,
-      "hop": 		x[p]->hop,
-      "ident": 	x[p]->ident,
-      "lat": 		x[p]->lat,
-      "long": 	x[p]->long,
-      "name": 	x[p]->name,
-      "type": 	x[p]->type
-			]);
+      "desc": x[p]->desc,
+      "hop": x[p]->hop,
+      "ident": x[p]->ident,
+      "lat": x[p]->lat,
+      "long": x[p]->long,
+      "name": x[p]->name,
+      "type": x[p]->type ]);
 		i++;
 		}
-
 	}
 return ret;
 }
@@ -494,7 +475,7 @@ return ret;
 {
 	file=combine_path(ini->SESSIONDIR,file);
 	string sess = replace(file,"_route.jpg",".fnp.route");
-	string sess_out = replace(file,"_route.jpg",".fnp.out");
+string sess_out = replace(file,"_route.jpg",".fnp.out");
  	mapping route = decode_value(Stdio.FILE(sess)->read());
 	mapping output = decode_value(Stdio.FILE(sess_out)->read());
 
@@ -522,9 +503,8 @@ return ret;
   	if(X2+10 > map_h) X2=X2-30;
 
 		img->line(Y1,X1,Y2,X2, 255,0,0);
-		img->circle(Y1,X1,5,5,0,0,255);
-		if(i != sizeof(indices(route))  && i != 1) img=img->paste_alpha_color(Image.Font()->write(route[i]->ident),0,0,255,Y1+4,X1+4 );
-
+		img->line(Y1-1,X1-1,Y2-1,X2-1, 255,0,0);
+		//img->line(Y1+1,X1+1,Y2+1,X2+1, 255,0,0);
  }
  return Image.JPEG.encode(img);
 }
