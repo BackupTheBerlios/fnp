@@ -69,3 +69,12 @@ int CheckInputICAO(string icao)
   if (sscanf(icao, "%*[A-Z]%1*s") == 2) {return 2;}
   if (sscanf(icao, "%*[A-Z]%1*s") == 1) {return 1;}
  }
+
+
+ string Send_Error(string error)
+ {
+   mapping ini = read_setings("settings.ini");
+   string tpl = Stdio.FILE(ini->HTMLDIR+"/"+ini->ERRORTPL)->read();
+   tpl = replace(tpl,"%ERROR-MESSAGE%",  error);
+   return (string) tpl;      
+ }
