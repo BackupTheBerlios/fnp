@@ -61,7 +61,7 @@
   </tr>
  </table>
  <hr>
-  <center><font face=Verdana size=4 color=#999999><u>WIND & GROUNDSPEED</u></font><br> <br>
+  <center><font face=Verdana size=4 color=#999999><u>ENROUTE WIND & GROUNDSPEED</u></font><br> <br>
  <table border=0 cellpadding="3" cellspacing="3">
   <tr>
    <td>true course (TC)</td>
@@ -92,6 +92,18 @@
    <td></td>
   </tr>
  </table>
-<br> <font color="RED">NOTE:</font> WD,WS,TAS fixed set in "settings.ini"<br>
+ 
+<br><font color="RED">NOTE:</font> WD,WS,TAS fixed set in "settings.ini"
+<br>  <hr><br>
+<center><font face=Verdana size=4 color=#999999><u>WEATHERSTATIONS:</u></font><br> <br>
+<table border=1 cellpadding="0" cellspacing="0">
+  <tr>
+   <td><iframe width="600" height="80" src="http://weather.noaa.gov/pub/data/forecasts/taf/stations/%ICAO1%.TXT" frameborder="0" SCROLLING="YES"></iframe></td>
+  </tr>
+  <tr>
+   <td><iframe width="600" height="80" src="http://weather.noaa.gov/pub/data/forecasts/taf/stations/%ICAO2%.TXT" frameborder="0" SCROLLING="YES"></iframe></td>
+  </tr>
+</table> 
 
+  
 
