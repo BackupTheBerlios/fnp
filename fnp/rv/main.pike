@@ -3,9 +3,33 @@ void  handle_request(Protocols.HTTP.Server.Request request)
   mapping ini = read_setings("settings.ini");
   mapping query=([]);
   string ret ="...";
+  string access ="NO";
+  
   string type = "text/html";
   string file = request->not_query;
   array file_ext = request->not_query/".";
+
+  /*CHECK CONNECT PERMISSIONS*/
+
+  array  tmp_ip = sprintf("%O",request->my_fd)/" ";
+  string ip =  replace(tmp_ip[1],"\"","");
+  array  ip_arr = ip/".";
+
+  if(ini->ACCESS == "ALL") access ="YES";
+  if(ini->ACCESS == "local" && ip == "127.0.0.1") access ="YES";
+  if(ini->ACCESS == "local" && ip_arr[0] == "10" ) access ="YES";
+  if(ini->ACCESS == "local" && ip_arr[0] == "172" && ip_arr[0] == "16" ) access ="YES";
+  if(ini->ACCESS == "local" && ip_arr[0] == "192" && ip_arr[0] == "168" ) access ="YES";
+
+  if( access =="NO")  {
+  write("! BLOCKED ->");
+  request->response_and_finish(([ "data": "Authentication failed.", "type":type ])); }
+ 
+   if( access =="YES")  {
+  
+   
+
+  
 
   if(request->query !="")
    {
@@ -30,13 +54,47 @@ void  handle_request(Protocols.HTTP.Server.Request request)
      {ret = Stdio.FILE(ini->HTMLDIR+"/finder.tpl")->read(); type = "text/html";}
    }
 
-request->response_and_finish(([ "data": ret, "type":type ]));
+ string parsed_ret =  preparser(ret,request->query);  
+ request->response_and_finish(([ "data": parsed_ret, "type":type ]));
+ }
+ write("[%s %s] REQUEST %s -> %s\n",time_now()->date,time_now()->time,ip,request->not_query);
 
-//string ip = (string) request->my_fd;
-//write("%O\n",request->my_fd->query_adress());
 
 }
-                        
+
+
+
+string preparser(string x,string query)
+
+{
+
+mapping vals =([]);
+vals["VERSION"] = Stdio.FILE("version.txt")->read();
+
+    
+if(query !="")
+   {
+    foreach(query/"&",string t)
+    {
+     array t1=t/"=";
+     vals["QUERY{"+t1[0]+"}"]=t1[1];
+    }
+   }
+     
+   foreach(indices(vals),string l )
+    {
+     string t1=  "%"+l+"%";
+     string t2=  vals[l];
+     x = replace(x,t1,  t2);
+    }    
+return x;
+  
+}
+
+
+
+
+                                                                              
 string rvsc(mapping query)
 {
  mapping DB = OpenDatabase("iat");
