@@ -108,9 +108,9 @@
 <table border=0 cellpadding="0" cellspacing="0" width=530 height=100>
  <tr>
   <td align="right" valign="bottom">
-
-	<input  class="ICAOField" type="submit" onclick="READY('1'); return false" name="" value="Next -->">
 <font size=4>Klick on the map to add waypoints</size>
+<br>
+	<input  class="ICAOField" type="submit" onclick="READY('1'); return false" name="" value="Next -->">
 
 	</td>
  </tr>
