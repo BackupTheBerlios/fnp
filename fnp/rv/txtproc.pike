@@ -14,12 +14,20 @@ return db;
 mapping GetICAOdata(string icao,mapping db)
 {
  mapping ret=([]);
+ foreach(indices(db), string l)
+{
+if(l == icao) {
+
  ret["name"] = replace(replace(db[icao]->name,"\n",""),"\r","");
  ret["lat"]  = replace(replace(db[icao]->lat,"\n",""),"\r","");
  ret["long"]  = replace(replace(db[icao]->long,"\n",""),"\r","");
  ret["runway"]  = "";
 
  return ret;
+}
+}
+ret["error"] = "1";
+return ret;
 
 }
 

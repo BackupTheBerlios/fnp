@@ -104,8 +104,8 @@ string rvsc(mapping query)
   if(CheckInputICAO(from) != 1) return (string)  from+" not a valid ICAO id";
   if(CheckInputICAO(to) != 1)   return (string)  to+" not a valid ICAO id";
   if(from == to)return (string) " departure and destination the same code ";
-  if(!GetICAOdata(from,DB)->name) return (string)  from+" not a valid ICAO id";
-  if(!GetICAOdata(to,DB)->name) return (string)  to+" not a valid ICAO id";
+  if(GetICAOdata(from,DB)->error) return (string)  from+" not a valid ICAO id";
+  if(GetICAOdata(to,DB)->error) return (string)  to+" not a valid ICAO id";
   if(E != "OK") return (string) E;
 
 return router(from,to,DB);
