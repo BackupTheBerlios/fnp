@@ -320,8 +320,11 @@ string ServPlanFilePass(string file,mapping ini)
 
 string ServPlanFileParse(string file,mapping ini)
 {
-mapping output = decode_value(Stdio.FILE(combine_path(ini->SESSIONDIR,file+".out"))->read());
- string tpl = Stdio.FILE(ini->HTMLDIR+"/"+ini->ROUTETPL)->read();
+	mapping print_route =([]);
+	mapping output = decode_value(Stdio.FILE(combine_path(ini->SESSIONDIR,file+".out"))->read());
+ 	mapping route = decode_value(Stdio.FILE(combine_path(ini->SESSIONDIR,file+".route"))->read());
+
+ 	string tpl = Stdio.FILE(ini->HTMLDIR+"/"+ini->ROUTETPL)->read();
 
  foreach(indices(output),string l )
    {
@@ -332,6 +335,69 @@ mapping output = decode_value(Stdio.FILE(combine_path(ini->SESSIONDIR,file+".out
     tpl = replace(tpl,t1,  t2);
 		}
    }
+
+/* parse also the "route" data" */
+
+
+int r_max = sizeof(indices(route)) ;
+
+	string tmp ="";
+	string ft =""; int dist,tc,gs,en_route_dist,total_time;
+	float wca;
+string dist_tmp;
+	route[r_max+1] =([ "hop": sizeof(indices(route))+1,"type":"Airport","ident": output["T_ICAO2"], "lat": output["T_LAT2"],
+									"long": output["T_LONG2"], "desc": "Destination","name":output["T_NAME2"] ]);
+
+		for(int i=1;i<r_max+2;i++)
+		{
+
+		if(i != 1 && i != r_max+2)
+		  {
+
+			mapping tmp =  FNP_KLick_Route_Calc_Dist((float) route[i-1]->lat,(float) route[i-1]->long, (float) route[i]->lat,(float) route[i]->long,output);
+				dist =(int)tmp->dist;
+				tc =(int)tmp->heading;
+				wca = (float) tmp->wca;
+				gs = (int) tmp->gs;
+				ft =  tmp->ft;
+
+			 dist_tmp=sprintf("%s - %s",route[i-1]->ident,route[i]->ident);
+				en_route_dist = en_route_dist+dist;
+				total_time = total_time+tmp->ft;
+			}
+
+
+array time_tmp = ({ ft /60, ft %60});
+array time_tmp1 = ({ total_time /60, total_time %60});
+
+	string total_time_f = sprintf("%O:%O / %O:%O",time_tmp[0],time_tmp[1],time_tmp1[0],time_tmp1[1]);
+
+		if(route[i]->hop != 0) {tmp += "<tr><td>"+(route[i]->hop-1)+
+		"</td><td>"+route[i]->ident+"</td><td>"+dist+
+		"</td><td>"+(int)tc+"°</td><td>"+(int)wca+
+		"°</td><td>"+ini->VAR+"</td><td>TT</td><td>"+ini->TAS+
+		"</td><td>"+gs+"</td><td>"+total_time_f+"</td></tr>\n";
+		}
+		}
+
+int en_route_dist_nm = (int) en_route_dist;
+int en_route_dist_km = (int) (en_route_dist*1.853);
+int en_route_dist_mi = (int)	(en_route_dist_km*0.62);
+
+		array total_time_f = ({ total_time/60,total_time%60});
+
+
+
+		tpl = replace(tpl,"%ENDISTNM%", (string) en_route_dist_nm);
+		tpl = replace(tpl,"%ERDISTMI%", (string) en_route_dist_mi);
+		tpl = replace(tpl,"%ERDISTKM%", (string) en_route_dist_km);
+		tpl = replace(tpl,"%ROUTE%",  tmp);
+		tpl = replace(tpl,"%ERTIME%",  (string)total_time_f[0]+":"+total_time_f[1]);
+
+
+
+
+
 	return tpl;
 }
 
@@ -420,24 +486,24 @@ Stdio.write_file(combine_path(ini->SESSIONDIR,sess+".route"),encode_value_canoni
 
 	 	 if(i==1)
 		 {
-		 	dist =  FNP_KLick_Route_Calc_Dist((float) route[i]->lat,(float) route[i]->long, (float) output["T_LAT1"],(float) output["T_LONG1"]);
+		 	dist =  FNP_KLick_Route_Calc_Dist((float) route[i]->lat,(float) route[i]->long, (float) output["T_LAT1"],(float) output["T_LONG1"],output)->dist;
 			dist =0;
 		dist_text ="&nbsp;";
 		 }
 
 	 	 if(i==sizeof(indices(route)))
 		 {
-		  dist =  FNP_KLick_Route_Calc_Dist((float) route[i-1]->lat,(float) route[i-1]->long, (float) output["T_LAT2"],(float) output["T_LONG2"]);
+		  dist =  FNP_KLick_Route_Calc_Dist((float) route[i-1]->lat,(float) route[i-1]->long, (float) output["T_LAT2"],(float) output["T_LONG2"],output)->dist;
 		 dist_text ="&nbsp;";
 		  }
 	 	 if(i != 1 && i != sizeof(indices(route)))
 		  {
-			dist =  FNP_KLick_Route_Calc_Dist((float) route[i]->lat,(float) route[i]->long, (float) route[i-1]->lat,(float) route[i-1]->long);
+			dist =  FNP_KLick_Route_Calc_Dist((float) route[i]->lat,(float) route[i]->long, (float) route[i-1]->lat,(float) route[i-1]->long,output)->dist;
 			dist_text ="";
 			}
 
 
-		 int dist_nm = (int) (dist*0.54);
+		 int dist_nm = (int) (dist);
 
 
 		 string this_hop = (string) i;
@@ -465,13 +531,32 @@ Stdio.write_file(combine_path(ini->SESSIONDIR,sess+".route"),encode_value_canoni
 	return tpl;
 }
 
-float FNP_KLick_Route_Calc_Dist(float lat1,float long1,float lat2,float long2)
+mapping FNP_KLick_Route_Calc_Dist(float lat1,float long1,float lat2,float long2,mapping output)
 {
 	object a	=	Geo( lat1, long1);
   object b	=	Geo( lat2, long2);
-	return	a->GCDistance(b);
-}
 
+	 	int TAS =output["T_AC-TAS"];
+   	int WS =output["T_INI_WS"];
+		int WD =output["T_INI_WD"];
+
+	   float 	RAD 					= 0.01745329;
+   float ALPHA 					= RAD*( 180 - ( (int) WD - (int)a->GCAzimuth(b)) );
+   float CWIND 					= (int) WS*sin(ALPHA);
+   float WCA 						= (asin( CWIND/ (int) TAS) /RAD);
+   float TWIND 					= (int) WS*cos(ALPHA);
+   float ETAS  					= (int) TAS*cos(WCA*RAD);
+   float GS    					= ETAS + TWIND;
+
+
+   float miles_per_min 	= (float)TAS/60.0;
+   float  ft						 =   a->GCDistance(b)*0.54 / miles_per_min ;
+
+
+
+	return	(["dist":a->GCDistance(b)*0.54, "heading":a->GCAzimuth(b), "wca": WCA, "gs":sprintf("%.2f",GS),"ft": (int)ft ]);
+
+}
 
 mapping FNP_KLick_Route_Delete_Hop(mapping x,string key)
 {
@@ -511,6 +596,7 @@ return ret;
 
 
 	object img =Image.load(file);
+	object img1 =Image.load("maps/germany.map");
  	float map_w = 330.0;
  	float map_h = 448.0;
 
@@ -531,9 +617,15 @@ return ret;
 
 		img->line(Y1,X1,Y2,X2, 255,0,0);
 		img->circle(Y1,X1,5,5,0,0,255);
-		if(i != sizeof(indices(route))  && i != 1) img=img->paste_alpha_color(Image.Font()->write(route[i]->ident),0,0,255,Y1+4,X1+4 );
+		img1->line(Y1,X1,Y2,X2, 255,0,0);
+		img1->circle(Y1,X1,5,5,0,0,255);
+		img1->circle(Y2,X2,5,5,0,0,255);
 
+  if(i != sizeof(indices(route))  && i != 1) img=img->paste_alpha_color(Image.Font()->write(route[i]->ident),0,0,255,Y1+4,X1+4 );
+	img1=img1->paste_alpha_color(Image.Font()->write(route[i]->ident),0,0,255,Y1+4,X1+4 );
+		img1=img1->paste_alpha_color(Image.Font()->write(route[i+1]->ident),0,0,255,Y2+4,X2+4 );
  }
+ Stdio.write_file(combine_path(file+".map"),Image.JPEG.encode(img1));
  return Image.JPEG.encode(img);
 }
 

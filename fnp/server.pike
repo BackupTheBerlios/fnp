@@ -95,6 +95,8 @@ void  handle_request(Protocols.HTTP.Server.Request request)
 		if(file_ext[1] == "jpg") ret = (["data" : ServPlanFilePass(file,ini),  "type" : "image/jpeg" ]);
 		if(file_ext[1] == "gif") ret = (["data" : ServPlanFilePass(file,ini),  "type" : "image/gif"  ]);
 		if(file_ext[1] == "fnp") ret = (["data" : ServPlanFileParse(file,ini), "type" : "text/html"  ]);
+		if(file_ext[1] == "map") ret = (["data" : ServPlanFilePass(file,ini), "type" : "image/jpeg"  ]);
+
 		done =1;
 		}
 
