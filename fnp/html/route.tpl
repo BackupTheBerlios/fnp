@@ -85,6 +85,9 @@
 	</table>
 
 	<br><img src="/PLAN_%SESSION%_route.jpg.map">
-	<br>
-<img src="http://developer.berlios.de/bslogo.php?group_id=1305" width="124" height="32" border="0" alt="BerliOS Developer Logo">
+
+<br>
+<br>
+<br>
+<img src="http://developer.berlios.de/bslogo.php?group_id=1305" width="124" height="32" border="0" alt="BerliOS Developer Logo"> 
 <img src="http://fnp.berlios.de/i/pike.gif" width="130" height="40" border="0" alt="Pike">

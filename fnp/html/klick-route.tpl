@@ -110,7 +110,7 @@
   <td align="right" valign="bottom">
 <font size=4>Klick on the map to add waypoints</size>
 <br>
-	<input  class="ICAOField" type="submit" onclick="READY('1'); return false" name="" value="Next -->">
+	<input  class="ICAOField" type="submit" onclick="READY('1'); return false" name="" value="Done -->">
 
 	</td>
  </tr>
