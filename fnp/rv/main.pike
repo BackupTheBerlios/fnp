@@ -45,7 +45,7 @@ void  handle_request(Protocols.HTTP.Server.Request request)
 
 /* AC DATABASE */
   mapping Aircrafts = Load_AC_DataBase();
-  write("%O", Aircrafts);
+  
   string acs;
    foreach(indices(Aircrafts),string l )
    {
@@ -217,6 +217,7 @@ string  router(string from,string to,string ac, mapping DB)
    string alternate_replace ="";
    string imgmap ="";
    string altname ="";
+
    foreach(indices(alternate),string l )
     {
      altname = replace(replace(GetICAOdata(l,DB)->name,"\n",""),"\r","");
@@ -240,26 +241,52 @@ string  router(string from,string to,string ac, mapping DB)
       mapping nav = navid(from,1.0,DB);
       nav +=  navid(to,1.0,DB);
 
+mapping altx = ([]);
+mapping pointer= ([]);
+	for(int i=1;i<gdist*0.54/50;i++)
+   {
+	 pointer = PosFinder(from,a->GCAzimuth(b),(float) i*50 ,DB);
+        altx += alt2(pointer->WGS_DLAT,pointer->WGS_DLONG,0.300,DB);
+	nav += navid2(pointer->WGS_DLAT,pointer->WGS_DLONG,0.300,DB);
+  }
+
+
+string tmp_map ="";
+foreach(indices(altx),string l )
+    {
+ 	mapping start = st(altx[l]->lat,altx[l]->long,55.0,48.0,6.0,15.0,330.0,448.0);
+      int Y1=(int)start->Y;
+      int X1=(int)start->X;
+      if(Y1+10 > 330.0) Y1=Y1-30;
+      if(X1+10 > 448.0) X1=X1-30;
+           altname = replace(replace(GetICAOdata(l,DB)->name,"\n",""),"\r","");
+     tmp_map=sprintf("<area shape='circle' coords='%s,%s,3' href='/RVSC/route?from=%s&to=%s&ac=%s'"+
+                        "onmouseover=\"return overlib('<b>AIRPORT:</b>%s<br/>%s<br/>distance:%s nm');\""+
+                        "onmouseout='return nd();'>\n",
+                        (string)Y1,(string)X1,output->ICAO1,l,ac,l,altname,(string)altx[l]->dist);
+	imgmap += tmp_map;
+
+      }
+
+
       foreach(indices(nav),string l )
         {
 
          mapping start = st(nav[l]->WGS_DLAT,nav[l]->WGS_DLONG,55.0,48.0,6.0,15.0,330.0,448.0);
           int Y1=(int)start->Y+5;
           int X1=(int)start->X+5;
-          
+
           if(Y1+10 > 330.0) Y1=Y1-30;
           if(X1+10 > 448.0) X1=X1-30;
 
-     
+
          imgmap += sprintf("<area shape='circle' coords='%s,%s,3' href='javascript:void(0);'"+
                             "onmouseover=\"return overlib('<b>NAVID :</b>%s / %s (Type: %s)<br/>NAME: %s<br/>FREQ:%s<br/>AIRPORT: %s');\""+
                             "onmouseout='return nd();'>\n", (string)Y1,(string)X1,l, nav[l]->ICAO,  (string)nav[l]->TYPE, nav[l]->NAME, (string)nav[l]->FREQ,nav[l]->ARPT_ICAO );
 
-                           
-          
+
+
         }
-        
-    
       
    tpl = replace(tpl,"{ALTERNATE}",alternate_replace);
    tpl = replace(tpl,"{IMGMAP}",imgmap);

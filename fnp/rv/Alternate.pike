@@ -1,10 +1,15 @@
 mapping alt(string icao, float range,mapping db)
 {
-  mapping tmp=([]);
+   float lat =(float) db[icao]->lat;
+   float long =(float)db[icao]->long;
+   return  alt2(lat,long,range,db);
+}
+
+mapping alt2(float lat,float long, float range,mapping db)
+
+{
+ mapping tmp=([]);
   mapping ret=([]);
-    float lat =(float) db[icao]->lat;
-    float long =(float)db[icao]->long;
-                                   
   foreach(indices(db), string l)
   {
     if( (float) db[l]->long > long - range && (float) db[l]->long < long + range) tmp[l] +=(["long": (float) db[l]->long ]);
@@ -25,19 +30,23 @@ mapping alt(string icao, float range,mapping db)
     }
    }
   }
- return ret;
+return ret;
 }
-
 
 
 mapping navid(string icao, float range,mapping db)
 {
+  float lat =(float) db[icao]->lat;
+  float long =(float)db[icao]->long;
+  return navid2( lat, long,  range, db);
+}
 
+
+mapping navid2(float lat,float long, float range,mapping db)
+{
   mapping nav= OpenDatabase_NAV();
   mapping tmp=([]);
   mapping ret=([]);
-    float lat =(float) db[icao]->lat;
-    float long =(float)db[icao]->long;
 
   foreach(indices(nav), string l)
   {
@@ -66,16 +75,50 @@ mapping navid(string icao, float range,mapping db)
      ret[l] +=(["STATE_PROV": nav[l]->STATE_PROV]);
      ret[l] +=(["ICAO": nav[l]->ICAO ]);
      ret[l] +=(["TYPE": nav[l]->TYPE ]);
-     ret[l] +=(["ARPT_ICAO": nav[l]->ARPT_ICAO ]);         
-     
-   }       
+     ret[l] +=(["ARPT_ICAO": nav[l]->ARPT_ICAO ]);
+
+   }
    }
   }
-   // write("%O",ret);
- return ret;
+  return ret;
 }
 
 
 
+mapping PosFinder(string icao, float  tc,float dist,mapping db)
+{
+/* this function calculates the position given by startpoint with distance and heading*/
+
+ float dlat =(float) db[icao]->lat;
+ float dlon =(float) db[icao]->long;
+
+
+return PosFinder2(dlat,dlon,tc,dist,db);
+}
+mapping PosFinder2(float dlat,float dlon, float  tc,float dist,mapping db)
+{
+
+
+float pi=3.1415926535;
+dlat = (pi/180)*dlat; /* dlat To Radians */
+dlon = (pi/180)*dlon; /* dlon To Radians */
+tc= (pi/180)*tc; /*course to radians */
+dist =  (dist*pi/(180*60));
+
+
+if(dlat >0) dlat=asin(sin(dlat)*cos(dist)+cos(dlat)*sin(dist)*cos(tc));
+if(dlat <0) dlat=asin(sin(dlat)*cos(dist)-cos(dlat)*sin(dist)*cos(tc));
+if(dlon >0) dlon=dlon+asin(sin(tc)*sin(dist)/cos(dlat));
+if(dlon <0) dlon=dlon-asin(sin(tc)*sin(dist)/cos(dlat));
+
+
+mapping ret=([]);
+
+ret["rlon"] = dlon;
+ret["rlat"] = dlat;
+ret["WGS_DLAT"] = (180/pi)*dlat;
+ret["WGS_DLONG"] = (180/pi)*dlon;
+return ret;
+}
 
 

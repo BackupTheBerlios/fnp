@@ -45,9 +45,30 @@ string rvsc_map(mapping query)
       img=img->paste_alpha_color(Image.Font()->write(from + "-" + to),0,0,0,1,12 );   /*infotext*/
       img=img->paste_alpha_color(Image.Font()->write("alternates"),255,0,255,1,24 );  //
 
- 
-/*ALTERNATES */
-mapping alt = alt(to,1.000,DB);
+
+
+mapping alt =  alt(to,1.000,DB);
+mapping nav= ([]);
+
+
+   /* find the brake even point :-) */
+   object a=Geo( (float) GetICAOdata(from,DB)->lat,(float) GetICAOdata(from,DB)->long);
+   object b=Geo( (float) GetICAOdata(to,DB)->lat, (float) GetICAOdata(to,DB)->long);
+   float gdist=a->GCDistance(b)*0.54;
+   float adist=a->ApproxDistance(b)*0.54;
+   float azimuth=a->GCAzimuth(b);
+
+   for(int i=1;i<gdist/50;i++)
+   {
+	mapping pointer = PosFinder(from,a->GCAzimuth(b),(float) i*50 ,DB);
+        alt += alt2(pointer->WGS_DLAT,pointer->WGS_DLONG,0.300,DB);
+	nav +=navid2(pointer->WGS_DLAT,pointer->WGS_DLONG,0.300,DB);
+  }
+
+
+/*ALTERNATES*/
+
+
       img=img->paste_alpha_color(Image.Font()->write("_not_valid_for_navigation_"),255,0,0,1,435 );
       foreach(indices(alt),string l )
         {
@@ -56,12 +77,13 @@ mapping alt = alt(to,1.000,DB);
           int X1=(int)start->X;
           if(Y1+10 > map_w) Y1=Y1-30;
           if(X1+10 > map_h) X1=X1-30;
-          img->circle(Y1,X1,3,3,255,0,255);          
+          img->circle(Y1,X1,3,3,255,0,255);
         }
 
 
- mapping nav = navid(from,1.0,DB);
-          nav += navid(to,1.0,DB);
+  nav += navid(from,0.6,DB);
+          nav += navid(to,0.6,DB);
+
       foreach(indices(nav),string l )
         {
 
@@ -73,12 +95,15 @@ mapping alt = alt(to,1.000,DB);
           img->circle(Y1,X1,1,1,0,255,0);
 
         }
-  
-        
 
 
 
-        
+
+
+
+
+
+
  return Image.JPEG.encode(img);
 }
 

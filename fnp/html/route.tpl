@@ -31,7 +31,7 @@
      <tr><td>kilometers</td><td>%DIST_KM%</td> </tr>
     </table>
 
-    <hr><b>FLIGHDATA:</b><br>
+    <hr><b>FLIGHTDATA:</b><br>
     <table>    
      <tr><td>True Course</td><td> %HEADING%</td></tr>
      <tr><td>Ground  Speed</td><td>%GS% NM</td></tr>
