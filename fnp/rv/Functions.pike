@@ -165,7 +165,8 @@ mapping popup(string sess,mapping query)
 	string tpl = Stdio.File(combine_path(ini->HTMLDIR,"misc.tpl"))->read();
 	tpl=replace(tpl,"%tpl%",(string)query->tpl);
 	tpl=replace(tpl,"%hop%",(string)query->hop);
-
+	tpl=replace(tpl,"%type%",(string)query->type);
+	tpl=replace(tpl,"%wpt%",(string)query->wpt);
 	tpl=replace(tpl,"%session%",(string)sess);
 	return (["data": tpl, "type": "text/html"]);
 }

@@ -6,6 +6,9 @@
 		{
 		if(key =="fl") {	document.getElementById("fl").style.display='inline'; }
 		if(key =="tas") {	document.getElementById("tas").style.display='inline'; }
+		if(key =="add_man") {	document.getElementById("add_man").style.display='inline'; }
+
+
 
 		}
 		function sendfl()
@@ -66,3 +69,7 @@
 </div>
 
 
+<div id="add_man" style="display:none">
+MANUAL_ADD
+%tpl%  %type%  %wpt%
+</div>

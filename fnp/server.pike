@@ -1,6 +1,7 @@
 #include "rv/FNP_Core.pike";     /* The Flightplaning Core*/
 #include "rv/DataBase.pike";     /* include geo stuff */
 #include "rv/Functions.pike";    /* include functions tools*/
+#include "rv/Module.pike";    /* include module loader*/
 
 
 mapping ini = read_setings("settings.ini");
@@ -89,6 +90,8 @@ void  handle_request(Protocols.HTTP.Server.Request request)
 		done =1;
 		}
 
+
+
 		if(file[0..5] == "/CALL_") /* Call Process */
 		{
 		string sess = replace(file,"/CALL_","");
@@ -121,6 +124,13 @@ void  handle_request(Protocols.HTTP.Server.Request request)
 		debug(sprintf("[%s %s] KLICKER %s -> %s\n",time_now()->date,time_now()->time,ip,request->not_query));
 		}
 
+  		if(file[0..4] == "/MOD:") /* M O D U L E - L O A D E R */
+		{
+		string sess  = replace(file,"/MOD_","");
+		mapping t_ret = call_module(sess,query);
+		ret = (["data" :t_ret->data, "type" : t_ret->type ]);
+		done =1;
+		}
 
 
 		if(done != 1)

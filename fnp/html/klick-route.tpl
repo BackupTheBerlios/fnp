@@ -35,7 +35,6 @@
 
 			function TAS(id)  {	NewWindow("/POPUP_%SESSION%?tpl=tas&hop="+id,'','220','120','yes','center');	}
 			function FL(id) 	{	NewWindow("/POPUP_%SESSION%?tpl=fl&hop="+id,'','220','120','yes','center');	}
-
 			function FLOver(id) 	{  overlib('Click to Change Flightlevel'); }
 			function TASOver(id) 	{  overlib('Click to Change TAS'); }
 			function DELOver(id) 	{  overlib('Click to Delete Waypoint'); }
@@ -64,6 +63,9 @@
 		 function READY() {
 		 document.ready.submit();
 		 }
+//+"&wpt="+document.add_man_form.add_wpt.value
+
+		function add_man() { NewWindow("/MOD:WaypointAdd_%SESSION%?tpl=add_man&type="+document.add_man_form.wpt_type.value+"&wpt="+document.add_man_form.add_wpt.value,'','220','120','yes','center');	}
 
 	</script>
 
@@ -107,12 +109,22 @@
 	</table>
 <table border=0 cellpadding="0" cellspacing="0" width=530 height=100>
  <tr>
-  <td align="right" valign="bottom">
-<font size=4>Klick on the map to add waypoints</size>
-<br>
-	<input  class="ICAOField" type="submit" onclick="READY('1'); return false" name="" value="Done -->">
+  <td align="left" valign="top">
+   Add Waypoints manual: <br><form name="add_man_form">
+   <input  class="ICAOField" type="text" size="5" name="add_wpt"/>
+   <select class="ICAOField" name="wpt_type">
+	<option value="wpt">Waypoitnt</option>
+	<option value="alt">Airport</option>
+	<option value="nav">NavID</option>
+   </select>
+   <input  class="ICAOField" type="submit" onclick="add_man(); return false" name="" value="ok"></form>
+   </td>
 
-	</td>
+  <td align="right" valign="bottom">
+   <font size=4>Klick on the map to add waypoints</size>
+   <br>
+   <input  class="ICAOField" type="submit" onclick="READY('1'); return false" name="" value="Done -->">
+  </td>
  </tr>
 </table>
 	</td>
