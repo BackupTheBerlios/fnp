@@ -48,7 +48,7 @@
 
 <br><br>
 <a href="/CODEFINDER/" onclick="NewWindow(this.href,'','400','450','yes','center');return false" onfocus="this.blur()">AIRPORT CODE FINDER</a>
-<br><br><b><font color="red">NOTE: VISUAL MAPPING WORKS ONLY WITH GERMAN AIRPORTS IN THIS RELASE</font></b>
+<br><br><b><font color="red">NOTE: VISUAL MAPPING WORKS ONLY WITH GERMAN AIRPORTS IN THIS RELEASE</font></b>
 <br><br>
 
 <iframe width="600" height="60" src="http://fnp.berlios.de/version/?version=%VERSION%" frameborder="0" SCROLLING="NO"></iframe>
