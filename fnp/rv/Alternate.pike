@@ -4,12 +4,12 @@ mapping alt(string icao, float range,mapping db)
   mapping ret=([]);
     float lat =(float) db[icao]->lat;
     float long =(float)db[icao]->long;
-
+                                   
   foreach(indices(db), string l)
   {
     if( (float) db[l]->long > long - range && (float) db[l]->long < long + range) tmp[l] +=(["long": (float) db[l]->long ]);
     if ( (float) db[l]->lat > lat - range && (float) db[l]->lat < lat + range) tmp[l] +=(["lat": (float) db[l]->lat ]);
-  }
+  }      /*runway filter  missing.*/
 
   foreach(indices(tmp),string l )
   {
@@ -21,7 +21,7 @@ mapping alt(string icao, float range,mapping db)
     {
      ret[l] +=(["lat": tmp[l]->lat ]);
      ret[l] +=(["long": tmp[l]->long ]);
-     ret[l] +=(["dist": (int)a->GCDistance(b) ]);
+     ret[l] +=(["dist": (int)a->GCDistance(b) ]); /*runway informations missing.*/
     }
    }
   }

@@ -1,78 +1,60 @@
-          void  handle_request(Protocols.HTTP.Server.Request request)
+void  handle_request(Protocols.HTTP.Server.Request request)
 {
+  mapping ini = read_setings("settings.ini");
+  mapping query=([]);
+  string ret ="...";
+  string type = "text/html";
+  string file = request->not_query;
+  array file_ext = request->not_query/".";
 
- mapping ini = read_setings("settings.ini");
- mapping query=([]);
-
-
- string ret ="...";
- string type = "text/html";
-
- string file = request->not_query;
- array file_ext = request->not_query/".";
-
- if(request->query !="")
-  {
-  foreach(request->query/"&",string t)
+  if(request->query !="")
    {
-   array t1=t/"=";
-   query[t1[0]]=t1[1];
+    foreach(request->query/"&",string t)
+    {
+     array t1=t/"=";
+     query[t1[0]]=t1[1];
+    }
    }
-  }
 
 
- if(file == "/") ret = Stdio.FILE(ini->HTMLDIR+"/"+ini->STARTPAGE)->read();  type = "text/html";
-
- if(file_ext[sizeof(file_ext)-1] == "jpg") { ret = "BILD"; type = "text/html"; }
- if(file_ext[sizeof(file_ext)-1] == "html") {ret = "html"; type = "text/html"; }
- if(file == "/RVSC/route") { ret = rvsc(query); type = "text/html";  }
- if(file == "/RVSC_MAP/")  {ret = rvsc_map(query); type = "image/jpeg";}
-
-
- if(file == "/CODEFINDER/")
- {
-   if(request->query !="") {  ret =  get_codes(query->c); type = "text/html";}
+  if(file == "/") ret = Stdio.FILE(ini->HTMLDIR+"/"+ini->STARTPAGE)->read();  type = "text/html";
+  if(file_ext[sizeof(file_ext)-1] == "jpg") { ret = "BILD"; type = "text/html"; }
+  if(file_ext[sizeof(file_ext)-1] == "html") {ret = "html"; type = "text/html"; }
+  if(file == "/RVSC/route") { ret = rvsc(query); type = "text/html";  }
+  if(file == "/RVSC_MAP/")  {ret = rvsc_map(query); type = "image/jpeg";}
+  if(file == "/CODEFINDER/")
+   {
+    if(request->query !="")
+     {  ret =  get_codes(query->c); type = "text/html"; }
     else
-   {ret = Stdio.FILE(ini->HTMLDIR+"/finder.tpl")->read(); type = "text/html";}
- }
-
+     {ret = Stdio.FILE(ini->HTMLDIR+"/finder.tpl")->read(); type = "text/html";}
+   }
 
 request->response_and_finish(([ "data": ret, "type":type ]));
-
 }
-
-
-
 
 string rvsc(mapping query)
 {
  mapping DB = OpenDatabase("iat");
  string from = upper_case(query->from);
  string to = upper_case(query->to);
-
  string E="OK";
-
-
- if(CheckInputICAO(from) != 1) E = from+" not a valid ICAO id";
- if(CheckInputICAO(to) != 1)   E =  to+" not a valid ICAO id";
- if(from == to)E = " departure and destination the same code ";
- if(!GetICAOdata(from,DB)->name) E =  from+" not a valid ICAO id";
- if(!GetICAOdata(to,DB)->name) E =  to+" not a valid ICAO id";
-
+  if(CheckInputICAO(from) != 1) E = from+" not a valid ICAO id";
+  if(CheckInputICAO(to) != 1)   E =  to+" not a valid ICAO id";
+  if(from == to)E = " departure and destination the same code ";
+  if(!GetICAOdata(from,DB)->name) E =  from+" not a valid ICAO id";
+  if(!GetICAOdata(to,DB)->name) E =  to+" not a valid ICAO id";
   if(E != "OK") return (string) E;
 
-   return router(from,to,DB);
- /*
- OK! CLEAN INPUT!
- */
+return router(from,to,DB);
 }
 
 
 
-string  router(string from,string to, mapping DB){
- mapping ini = read_setings("settings.ini");
- mapping output=([]);
-
+string  router(string from,string to, mapping DB)
+  {
+  mapping ini = read_setings("settings.ini");
+  mapping output=([]);
    output["INI_NAME"] =(string)  ini->NAME;
    output["INI_TAS"] = (string) ini->TAS;
    output["INI_WD"] = (string) ini->WD;
@@ -126,27 +108,22 @@ string  router(string from,string to, mapping DB){
    output["tpl_filename"] =("plans/"+output->ICAO1+"-"+output->ICAO2+"-"+time()+".html");
    output["map_filename"] =(output->ICAO1+"-"+output->ICAO2+".jpg");
 
-   /* template parser */
+/* template parser */
    string tpl = Stdio.FILE(ini->HTMLDIR+"/"+ini->ROUTETPL)->read();
    foreach(indices(output),string l )
     {
-    string t1=  "%"+l+"%";
-    string t2=  output[l];
-    tpl = replace(tpl,t1,  t2);
+     string t1=  "%"+l+"%";
+     string t2=  output[l];
+     tpl = replace(tpl,t1,  t2);
     }
    string alternate_replace ="";
    foreach(indices(alternate),string l )
-   {
-   alternate_replace += sprintf ("<tr><td>%s</td><td>%s</td><td>%O nm</td></tr>",
+    {
+     alternate_replace += sprintf ("<tr><td>%s</td><td>%s</td><td>%O nm</td></tr>",
                                   l,replace(replace(GetICAOdata(l,DB)->name,"\n",""),"\r",""),
                                   alternate[l]->dist);
-  }
-  tpl = replace(tpl,"{ALTERNATE}",alternate_replace);
- write("[%s %s] process route from %O to %O for %O \n",time_now()->date,time_now()->time,output->ICAO1,output->ICAO2,sprintf("%02s",ini->NAME));
- return tpl;
-
-
+    }
+   tpl = replace(tpl,"{ALTERNATE}",alternate_replace);
+   write("[%s %s] process route from %O to %O for %O \n",time_now()->date,time_now()->time,output->ICAO1,output->ICAO2,sprintf("%02s",ini->NAME));
+return tpl;
 }
-
-
-
