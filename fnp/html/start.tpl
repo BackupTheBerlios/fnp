@@ -44,11 +44,14 @@
 <tr><td><font face=Verdana size=2 color=#000000>FROM &nbsp;</td><td><input type="text" name="from" size="4" maxlength="4"></td></tr>
 <tr><td><font face=Verdana size=2 color=#000000>TO</td><td><input type="text" name="to" size="4" maxlength="4"></td></tr>
 
-</table>     <input type="submit" name="go">   <br><br>
+</table>     <input type="submit" name="go"> </form>
+
+<br><br>
 <a href="/CODEFINDER/" onclick="NewWindow(this.href,'','400','450','yes','center');return false" onfocus="this.blur()">AIRPORT CODE FINDER</a>
-
-
-</form>
-
+<br><br><b><font color="red">NOTE: VISUAL MAPPING WORKS ONLY WITH GERMAN AIRPORTS IN THIS RELASE</font></b>
+<br><br>
+<iframe width="600" height="60" src="http://fnp.berlios.de/version/?version=%VERSION%" frameborder="0" SCROLLING="NO"></iframe>
+     
+    
 </body>
 </html>
