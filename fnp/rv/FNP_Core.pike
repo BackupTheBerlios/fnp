@@ -67,37 +67,40 @@ Push_Log(sess,sprintf("Processing %s -> %s with %s ",from,to,ac));
 
 	if(ini->DEMO == "YES") { from =ini->DEMO_F; to =ini->DEMO_T;}
 	mapping output=([]);
-   output["INI_NAME"] 	=	(string)  ini->NAME;
-   output["INI_WD"] 		= (string) ini->WD;
-   output["INI_WS"] 		= (string) ini->WS;
-   output["AC-TAS"] 		= (string)  Aircrafts[ac]->TAS;
-   output["AC-REG"] 		= (string)  ac;
-   output["AC-TYPE"] 		= (string)  Aircrafts[ac]->TYPE;
-   output["AC-MOTW"] 		= (string)  Aircrafts[ac]->MOTW;
-   output["AC-RANGE"] 	= (string)  Aircrafts[ac]->RANGE;
-   output["AC-RMK"] 		= (string)  Aircrafts[ac]->RMK;
-   output["ICAO1"] 			=	(string)	from;
-   output["ICAO2"] 			= (string)	to;
-   output["NAME1"] 			=	(string)	m_from->name;
-   output["NAME2"] 			= (string)	m_to->name;
-   output["LAT1"] 			= (string)	m_from->lat;
-	 output["LONG1"] 			=	(string) 	m_from->long;
-   output["LAT2"] 			= (string)	m_to->lat;
-   output["LONG2"] 			= (string)	m_to->long;
+
+
+   output["T_SESSION"] 		=	(string)  sess;;
+   output["T_INI_NAME"] 	=	(string)  ini->NAME;
+   output["T_INI_WD"] 		= (string) ini->WD;
+   output["T_INI_WS"] 		= (string) ini->WS;
+   output["T_AC-TAS"] 		= (string)  Aircrafts[ac]->TAS;
+   output["T_AC-REG"] 		= (string)  ac;
+   output["T_AC-TYPE"] 		= (string)  Aircrafts[ac]->TYPE;
+   output["T_AC-MOTW"] 		= (string)  Aircrafts[ac]->MOTW;
+   output["T_AC-RANGE"] 	= (string)  Aircrafts[ac]->RANGE;
+   output["T_AC-RMK"] 		= (string)  Aircrafts[ac]->RMK;
+   output["T_ICAO1"] 			=	(string)	from;
+   output["T_ICAO2"] 			= (string)	to;
+   output["T_NAME1"] 			=	(string)	m_from->name;
+   output["T_NAME2"] 			= (string)	m_to->name;
+   output["T_LAT1"] 			= (string)	m_from->lat;
+	 output["T_LONG1"] 			=	(string) 	m_from->long;
+   output["T_LAT2"] 			= (string)	m_to->lat;
+   output["T_LONG2"] 			= (string)	m_to->long;
 
    object a							=	Geo( (float) m_from->lat, (float) m_from->long);
    object b							=	Geo( (float) m_to->lat  , (float) m_to->long);
 	 float gdist					=	a->GCDistance(b);
    float adist					=	a->ApproxDistance(b);
    float azimuth				=	a->GCAzimuth(b);
-   output["DIST_KM"] 		= sprintf("%.2f",gdist);
-   output["DIST_MI"] 		= sprintf("%.2f",gdist*0.62);
-   output["DIST_NM"] 		= sprintf("%.2f",gdist*0.54);
-   output["HEADING"] 		= sprintf("%.2f",azimuth);
-   output["TIME"]    		= time_now()->time;
-   output["DATE"]    		= time_now()->date;
+   output["T_DIST_KM"] 		= sprintf("%.2f",gdist);
+   output["T_DIST_MI"] 		= sprintf("%.2f",gdist*0.62);
+   output["T_DIST_NM"] 		= sprintf("%.2f",gdist*0.54);
+   output["T_HEADING"] 		= sprintf("%.2f",azimuth);
+   output["T_TIME"]    		= time_now()->time;
+   output["T_DATE"]    		= time_now()->date;
 
-Push_Log(sess,sprintf("Distance: %s, Heading: %s",output["DIST_NM"],output["HEADING"]));
+Push_Log(sess,sprintf("Distance: %s, Heading: %s",output["T_DIST_NM"],output["T_HEADING"]));
 
    float 	RAD 					= 0.01745329;
    float ALPHA 					= RAD*( 180 - ( (int) ini->WD - (int)output->HEADING) );
@@ -106,62 +109,165 @@ Push_Log(sess,sprintf("Distance: %s, Heading: %s",output["DIST_NM"],output["HEAD
    float TWIND 					= (int) ini->WS*cos(ALPHA);
    float ETAS  					= (int) Aircrafts[ac]->TAS*cos(WCA*RAD);
    float GS    					= ETAS + TWIND;
-   output["WCA"]			 	= (string) WCA;
-   output["GS"]    			= (string) sprintf("%.2f",GS);
+   output["T_WCA"]			 	= (string) WCA;
+   output["T_GS"]    			= (string) sprintf("%.2f",GS);
    float miles_per_min 	= 60.0/(float)Aircrafts[ac]->TAS;
-   output["FLIGHTTIME"] = (string) sprintf("%.0f",((float)miles_per_min * (float)output->DIST_NM));
-   output["mn_per_min"] =	(string) miles_per_min;
+   output["T_FLIGHTTIME"] = (string) sprintf("%.0f",((float)miles_per_min * (float)output->DIST_NM));
+   output["T_mn_per_min"] =	(string) miles_per_min;
 
-Push_Log(sess,sprintf("GS: %s WCA: %s, TAS: %s.",output["GS"],output["WCA"],output["AC-TAS"]));
-Push_Log(sess,sprintf("Flighttime: %s min.",output["FLIGHTTIME"]));
-
-
-mapping Alt = alt(output["ICAO2"],1.000,DB);
-Push_Log(sess,sprintf("Found %d Alternates for %s",sizeof(indices(Alt)),output["ICAO2"]));
-
-foreach(indices(Alt),string l) { output["Alt_"+l] =(["lat":	Alt[l]->lat, "long": Alt[l]->long, "dist":Alt[l]->dist ]); }
+	 Push_Log(sess,sprintf("GS: %s WCA: %s, TAS: %s.",output["T_GS"],output["T_WCA"],output["T_AC-TAS"]));
+	 Push_Log(sess,sprintf("Flighttime: %s min.",output["T_FLIGHTTIME"]));
 
 
+	mapping Alt = alt(output["T_ICAO2"],1.000,DB);
+	Push_Log(sess,sprintf("Found %d Alternates for %s",sizeof(indices(Alt)),output["T_ICAO2"]));
 
+	 foreach(indices(Alt),string l) { output["Alt_"+l] =(["lat":	Alt[l]->lat, "long": Alt[l]->long, "dist":Alt[l]->dist ]); }
 
-	mapping pointer	= ([]);
-	mapping NavID		=	([]);
-	for(int i=1;i<gdist*0.54/50;i++)
+	mapping pointer	= ([]); mapping NavID		=	([]);
+
+	for(int i=1;i<gdist*0.54/25;i++)
    {
-	 pointer = PosFinder(from,a->GCAzimuth(b),(float) i*50 ,DB);
-        Alt += alt2(pointer->WGS_DLAT,pointer->WGS_DLONG,0.300,DB);
-	NavID += navid2(pointer->WGS_DLAT,pointer->WGS_DLONG,0.300,DB,nav);
+	 pointer = PosFinder(from,a->GCAzimuth(b),(float) i*25 ,DB);
+     Alt += alt2(pointer->WGS_DLAT,pointer->WGS_DLONG,0.300,DB);
+		NavID += navid2(pointer->WGS_DLAT,pointer->WGS_DLONG,0.300,DB,nav);
   }
+		NavID += navid2((float) m_to->lat, (float) m_to->long,0.500,DB,nav);
+
+	Push_Log(sess,sprintf("Found %d En-Route Alternates",sizeof(indices(Alt))));
+	 foreach(indices(Alt),string l) { output["Alt_"+l] =(["lat":	Alt[l]->lat, "long": Alt[l]->long, "dist":Alt[l]->dist ]); }
+
+	Push_Log(sess,sprintf("Found %d En-Route NavID's",sizeof(indices(NavID))));
+
+	 foreach(indices(NavID),string l) { output["Nav_"+l] =(["name":	NavID[l]->NAME, "type": NavID[l]->TYPE, "lat": NavID[l]->WGS_DLAT,
+																	"long": NavID[l]->WGS_DLONG, "freq":NavID[l]->FREQ, "arpt": NavID[l]->ARPT_ICAO , "icao": NavID[l]->ICAO ]); }
 
 
-Push_Log(sess,sprintf("Found %d En-Route Alternates",sizeof(indices(Alt))));
-foreach(indices(Alt),string l) { output["Alt_"+l] =(["lat":	Alt[l]->lat, "long": Alt[l]->long, "dist":Alt[l]->dist ]); }
-
-Push_Log(sess,sprintf("Found %d En-Route NavID's",sizeof(indices(NavID))));
-foreach(indices(NavID),string l) { output["Nav_"+l] =(["name":	NavID[l]->NAME, "type": NavID[l]->TYPE, "lat": NavID[l]->WGS_DLAT,
-																	"long": NavID[l]->WGS_DLONG, "freq":NavID[l]->FREQ, "arpt": NavID[l]->ARPT_ICAO]); }
-
-
-
-
-
-
-
-write("\n%O\n",output);
-
-
-
+  		string alternate_replace =""; string imgmap =""; string altname ="";
+ 		foreach(indices(Alt),string l )/* IMAGEMAP  (airports) */
+    {
+     	altname = replace(replace(GetICAOdata(l,DB)->name,"\n",""),"\r","");
+     	alternate_replace += sprintf ("<tr><td>%s</td><td>%s</td><td>%O nm</td></tr>",l,altname,Alt[l]->dist);
+      mapping start = st(Alt[l]->lat,Alt[l]->long,55.0,48.0,6.0,15.0,330.0,448.0);
+      int Y1=(int)start->Y;
+      int X1=(int)start->X;
+      if(Y1+10 > 330.0) Y1=Y1-30;
+      if(X1+10 > 448.0) X1=X1-30;
+      imgmap += sprintf("<area shape='circle' coords='%s,%s,3' href='javascript:void(0);'"+
+                        "onmouseover=\"return overlib('<b>AIRPORT:</b>%s<br/>%s<br/>distance:%s nm');\""+
+                        "onmouseout='return nd();'>\n",
+                        (string)Y1,(string)X1,l,altname,(string)Alt[l]->dist);
+   	}
 
 
+		foreach(indices(NavID),string l )/* IMAGEMAP  (NavIDs) */
+    {
+     mapping start = st(NavID[l]->WGS_DLAT,NavID[l]->WGS_DLONG,55.0,48.0,6.0,15.0,330.0,448.0);
+     int Y1=(int)start->Y+5;
+     int X1=(int)start->X+5;
+     if(Y1+10 > 330.0) Y1=Y1-30;
+     if(X1+10 > 448.0) X1=X1-30;
+     imgmap += sprintf("<area shape='circle' coords='%s,%s,3' href='javascript:void(0);'"+
+                            "onmouseover=\"return overlib('<b>NAVID :</b>%s / %s (Type: %s)<br/>NAME: %s<br/>FREQ:%s<br/>AIRPORT: %s');\""+
+                            "onmouseout='return nd();'>\n", (string)Y1,(string)X1,l, (string)  NavID[l]->icao,(string) NavID[l]->type,
+														(string)  NavID[l]->name,	(string)NavID[l]->freq, (string) NavID[l]->arpt );
+		}
 
-return "hallo";
+		output["T_IMGMAP"] = imgmap;
+		output["T_ALTERNATE"] = alternate_replace;
+
+Push_Log(sess,"Scanning map.");
+		/* create the map image */
+		  float map_w = 330.0;
+   		float map_h = 448.0;
+
+    mapping start = st((float) m_from->lat, (float) m_from->long,55.0,48.0,6.0,15.0,map_w,map_h);
+    mapping end = st((float) m_to->lat, (float) m_to->long,55.0,48.0,6.0,15.0,map_w,map_h);
+
+    int Y1=(int)start->Y;
+    int X1=(int)start->X;
+    int Y2=(int)end->Y;
+    int X2=(int)end->X;
+
+  object img =Image.load("maps/germany.map");
+    if(Y1+10 > map_w) Y1=Y1-30;
+    if(Y2+10 > map_w) Y2=Y2-30;
+    if(X1+10 > map_h) X1=X1-30;
+    if(X2+10 > map_h) X2=X2-30;
+      img->line(Y1,X1,Y2,X2, 255,0,0); /*routeline*/
+      img->circle(Y1,X1,5,5,0,0,255);  /*start circle*/
+      img->circle(Y2,X2,5,5,0,0,255);  /*end circle*/
+      img=img->paste_alpha_color(Image.Font()->write(from),0,0,255,Y1+4,X1+4 ); /*ICAO name from */
+      img=img->paste_alpha_color(Image.Font()->write(to),0,0,255,Y2+4,X2+4 );   /*ICAO name to */
+      img=img->paste_alpha_color(Image.Font()->write(time_now()->date+" "+time_now()->time),0,0,0,1,1 ); /*time / date info*/
+      img=img->paste_alpha_color(Image.Font()->write(from + "-" + to),0,0,0,1,12 );   /*infotext*/
+
+
+/* ALTERNATES */
+
+
+      img=img->paste_alpha_color(Image.Font()->write("_not_valid_for_navigation_"),255,0,0,1,435 );
+
+			foreach(indices(Alt),string l )
+        {
+         mapping start = st(Alt[l]->lat,Alt[l]->long,55.0,48.0,6.0,15.0,map_w,map_h);
+          int Y1=(int)start->Y;
+          int X1=(int)start->X;
+          if(Y1+10 > map_w) Y1=Y1-30;
+          if(X1+10 > map_h) X1=X1-30;
+          img->circle(Y1,X1,3,3,255,0,255);
+        }
+
+      foreach(indices(NavID),string l )
+        {
+        mapping start = st(NavID[l]->WGS_DLAT,NavID[l]->WGS_DLONG,55.0,48.0,6.0,15.0,map_w,map_h);
+          int Y1=(int)start->Y+5;
+          int X1=(int)start->X+5;
+          if(Y1+10 > map_w) Y1=Y1-30;
+          if(X1+10 > map_h) X1=X1-30;
+          img->circle(Y1,X1,1,1,0,255,0);
+       	}
+
+
+
+				Stdio.write_file(combine_path(ini->SESSIONDIR,sess+"_route.jpg"),Image.JPEG.encode(img));
+
+Push_Log(sess,"Wrote map.");
+
+
+Stdio.write_file(combine_path(ini->SESSIONDIR,sess+".fnp.out"),encode_value_canonic(output));
+Push_Log_Done(sess);
+return "done";
 
 }
 
 
 
 
+string ServPlanFilePass(string file,mapping ini)
+{
+ file=combine_path(ini->SESSIONDIR,file);
+ if(Stdio.exist(file)) 	return Stdio.FILE(file)->read();
+ return "404";
 
+}
+
+string ServPlanFileParse(string file,mapping ini)
+{
+mapping output = decode_value(Stdio.FILE(combine_path(ini->SESSIONDIR,file+".out"))->read());
+ string tpl = Stdio.FILE(ini->HTMLDIR+"/"+ini->ROUTETPL)->read();
+
+ foreach(indices(output),string l )
+   {
+	 if(l[0..1] == "T_")
+	 	{
+	  string t1=  (string) "%"+replace(l,"T_","")+"%";
+    string t2=  (string) output[l];
+    tpl = replace(tpl,t1,  t2);
+		}
+   }
+	return tpl;
+}
 
 
 

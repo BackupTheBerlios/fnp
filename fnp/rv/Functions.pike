@@ -134,12 +134,14 @@ string my_crypt(string f)
 return ret;
 }
 
-string show_log(string sess)
+mapping show_log(string sess)
 {
-sess =combine_path(ini->SESSIONDIR,sess+".log");
-
-	if(Stdio.exist(sess)) return Stdio.FILE(sess)->read();
-	return ".";
+	string redirect = sprintf("<html><head><script language=\"javascript\" type=\"text/javascript\">function go(){top.location.href=\"/PLAN_%s.fnp\";}</script></head><body OnLoad=\"go();\"></html>",sess);
+	sess =combine_path(ini->SESSIONDIR,sess+".log");
+	string log ="";
+	if(Stdio.exist(sess))  log = Stdio.FILE(sess)->read();
+	if(log =="DONE") return (["data": redirect, "type": "text/html"]);
+	return (["data": log, "type": "text/plain"]);
 }
 
 string Push_Log(string sess,string log)
@@ -149,6 +151,14 @@ string Push_Log(string sess,string log)
 	Stdio.append_file(sess,log);
 }
 
+
+string Push_Log_Done(string sess)
+{
+	string log ="DONE";
+	sess =combine_path(ini->SESSIONDIR,sess+".log");
+	Stdio.write_file(sess,log);
+
+}
 
 
 
@@ -269,7 +279,21 @@ mapping navid2(float lat,float long, float range,mapping db,mapping nav)
 
 
 
+mapping st(float lat,float long,float N,float S, float W,float O,float width,float height)
+{
+    mapping pos=([]);
+    pos["argv"] = sprintf("lat=%O, long=%O, N=%O,S=%O W=%O, O=%O, width=%O, height=%O",lat,long,N,S,W,O,width,height);
+    pos["geo_breite"] =  O-W;
+    pos["Y1"] =  pos->geo_breite/width;
+    pos["Y2"] = long-W;
+    pos["Y"] =pos->Y2/pos->Y1;
+    pos["geo_hoehe"] =  N-S;
+    pos["X1"] =  pos->geo_hoehe/height;
+    pos["X2"] =N-lat;
+    pos["X"] =pos->X2/pos->X1;
 
+ return pos;
+}
 
 
 

@@ -67,17 +67,19 @@ void  handle_request(Protocols.HTTP.Server.Request request)
 			mapping Start_FNP_Holding =Start_FNP_Holding(file,ini);
 			ret = (["data" : Start_FNP_Holding->data, "type" : "text/html" ]);
 		}
-		if(file[0..4] == "/LOG_") /* Listen Process */
+		if(file[0..4] == "/LOG_") /* Logfile Process */
 		{
 		string sess = replace(file,"/LOG_","");
-		ret = (["data" :show_log(sess), "type" : "text/plain" ]);
+		mapping show_log = show_log(sess);
+		ret = (["data" :show_log->data, "type" : show_log->type ]);
 		}
-		if(file[0..5] == "/CALL_") /* Listen Process */
+		if(file[0..5] == "/CALL_") /* Call Process */
 		{
 		string sess = replace(file,"/CALL_","");
 		FNP_Route(sess,ini);
 		ret = (["data" : "0", "type" : "text/plain" ]);
 		}
+
 
 
 		switch(file_ext[sizeof(file_ext)-1]) /* SURF THE REST (STATIC FILES ) */
@@ -88,6 +90,18 @@ void  handle_request(Protocols.HTTP.Server.Request request)
   		case "css"	:	ret = File_Server_Parsed(file,request->query,0,ini,"css"	);	break;
   		case "js"		:	ret = File_Server_Parsed(file,request->query,0,ini,"js"		);	break;
 		}
+
+		if(file[0..5] == "/PLAN_") /* PlanPages Process */
+		{
+		 file = replace(file,"/PLAN_","");
+		if(file_ext[1] == "jpg") ret = (["data" : ServPlanFilePass(file,ini),  "type" : "image/jpeg" ]);
+		if(file_ext[1] == "gif") ret = (["data" : ServPlanFilePass(file,ini),  "type" : "image/gif"  ]);
+		if(file_ext[1] == "fnp") ret = (["data" : ServPlanFileParse(file,ini), "type" : "text/html"  ]);
+
+
+		}
+
+
 
 		if(ret->data)  request->response_and_finish(([ "data": ret->data, "type":ret->type, "server": ret->server ]));
 		if(!ret->data) request->response_and_finish(([ "data": "404?"+file, "type":"text/html" ]));

@@ -67,16 +67,16 @@
     <hr><b>ALTERNATE AIRPORTS</b>
     <table>
      <tr><td>ICAO</td><td>Name</td><td>distance</td></tr>
-     {ALTERNATE}
+     %ALTERNATE%
     </table>
    </td>
    <td valign=top>&nbsp;&nbsp;&nbsp;</td>
    <td valign=top>
     <map name="maphits">
-    {IMGMAP}
+    %IMGMAP%
     </map>
-   
-    <img src="/RVSC_MAP/?from=%ICAO1%&to=%ICAO2%" width="330" height="448" border="1" alt="Karte" usemap="#maphits">
+
+    <img src="/PLAN_%SESSION%_route.jpg" width="330" height="448" border="1" alt="Karte" usemap="#maphits">
 	<br><font face=Verdana size=3 color=#000000>
 	move the mouse over the map!
 
