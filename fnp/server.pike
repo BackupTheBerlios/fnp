@@ -9,7 +9,7 @@ int main()
 {
   mapping ini = read_setings("settings.ini");
   object server=Protocols.HTTP.Server.Port(handle_request, (int) ini->PORT);
-  write("System ready\nopen your webbrowser and go to http://localhost:%s\n",(string) ini->PORT);
+  write("System running...\nopen your webbrowser and go to http://localhost:%s\n to stop the system, close this window.",(string) ini->PORT);
   return -1;
 }
 
