@@ -59,6 +59,7 @@ void  handle_request(Protocols.HTTP.Server.Request request)
   if(file_ext[sizeof(file_ext)-1] == "html") {ret = "html"; type = "text/html"; }
   
   if(file == "/RVSC/route") { ret = rvsc(query); type = "text/html";  }
+
   if(file == "/RVSC_MAP/")  {ret = rvsc_map(query); type = "image/jpeg";}
   if(file == "/CODEFINDER/")
    {
@@ -74,8 +75,8 @@ void  handle_request(Protocols.HTTP.Server.Request request)
   if(file_ext[sizeof(file_ext)-1] == "html") {ret = serv_file(file);  type = "text/html"; }
   if(file_ext[sizeof(file_ext)-1] == "css") {ret = serv_file(file);    type = "application/x-javascript"; }
   if(file_ext[sizeof(file_ext)-1] == "js") {ret = serv_file(file);    type = "application/x-javascript"; }
-  
-  
+
+
   
 
 
@@ -90,9 +91,18 @@ void  handle_request(Protocols.HTTP.Server.Request request)
 
 
 string preparser(string x,string query)
-{
+{ mapping ini = read_setings("settings.ini");
  mapping vals =([]);
- vals["VERSION"] = Stdio.FILE("version.txt")->read();
+ vals["DEMO"] ="";
+ vals["PRE_FROM"] ="";
+   vals["PRE_TO"] ="";
+   vals["VERSION"] = Stdio.FILE("version.txt")->read();
+
+  if(ini->DEMO == "YES"){
+   vals["DEMO"] =sprintf("The System running in DEMO mode, The Route is fixed imited from %s to %s",ini->DEMO_F,ini->DEMO_T);
+   vals["PRE_FROM"] =ini->DEMO_F;
+   vals["PRE_TO"] =ini->DEMO_T;
+   }
 
     
 if(query !="")
@@ -121,10 +131,15 @@ return x;
 {
  mapping ini = read_setings("settings.ini");
  mapping DB = OpenDatabase("ficken");
+
+
+
  string from = upper_case(query->from);
  string to = upper_case(query->to);
  string ac = query->ac;
- 
+
+
+
  string E="OK";
   if(from == to)                  return Send_Error("Departure and Destination the same");
   if(CheckInputICAO(from) != 1)   return Send_Error("\"" + from + "\": Invalid ICAO ID");
@@ -143,8 +158,11 @@ string  router(string from,string to,string ac, mapping DB)
   {
   mapping ini = read_setings("settings.ini");
   mapping AC = Load_AC_DataBase();
+
+if(ini->DEMO == "YES") { from =ini->DEMO_F; to =ini->DEMO_T;}
+
   mapping output=([]);
-  
+
    output["INI_NAME"] =(string)  ini->NAME;
    output["INI_WD"] = (string) ini->WD;
    output["INI_WS"] = (string) ini->WS;

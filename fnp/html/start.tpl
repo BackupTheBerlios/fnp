@@ -41,15 +41,15 @@
                <br><br><br><br>
 <form action="/RVSC/route">
 <table  valign="top" border="0" cellspacing="0" cellpadding="0" height="">
-<tr><td><font face=Verdana size=2 color=#000000>FROM (ICAO code)&nbsp;</td><td><input type="text" name="from" size="4" maxlength="4"></td></tr>
-<tr><td><font face=Verdana size=2 color=#000000>TO (ICAO code)</td><td><input type="text" name="to" size="4" maxlength="4"></td></tr>
+<tr><td><font face=Verdana size=2 color=#000000>FROM (ICAO code)&nbsp;</td><td><input type="text" value ="%PRE_FROM%" name="from" size="4" maxlength="4"></td></tr>
+<tr><td><font face=Verdana size=2 color=#000000>TO (ICAO code)</td><td><input type="text" name="to" value ="%PRE_TO%" size="4" maxlength="4"></td></tr>
 <tr><td><font face=Verdana size=2 color=#000000>aircraft</td><td><select name=ac>{AC-LIST}</select> </td></tr>
 
 </table>     <input type="submit" name="go"> </form>
 
 <br><br>
 <a href="/CODEFINDER/" onclick="NewWindow(this.href,'','400','450','yes','center');return false" onfocus="this.blur()">AIRPORT CODE FINDER</a>
-<br><br><b><font color="red">NOTE: VISUAL MAPPING WORKS ONLY WITH GERMAN AIRPORTS IN THIS RELEASE</font></b>
+<br><br><b><font color="red">NOTE: VISUAL MAPPING WORKS ONLY WITH GERMAN AIRPORTS IN THIS RELEASE <br> %DEMO%</font></b>
 <br><br>
 
 <iframe width="600" height="60" src="http://fnp.berlios.de/version/?version=%VERSION%" frameborder="0" SCROLLING="NO"></iframe>
