@@ -240,7 +240,7 @@ mapping sur = RWY_SUR();
 		string surface = sprintf("<a href=\"javascript:void(0);\" onmouseover=\"return overlib(\'%s\');\" onmouseout=\"return nd();\">%s</a>",
 															sur[rwy[l]->SURFACE],rwy[l]->SURFACE);
 
-		ret +=sprintf("<tr><td>%d/%s</td><td>%s x %s ft.</td><td>%s</td></tr> \n",low_id,rwy[l]->RWY,rwy[l]->LENGHT, rwy[l]->WIDHT,surface);
+		ret +=sprintf("<tr><td><b>Rwy:</b> %d/%s</td><td>%s x %s ft.</td><td>%s</td></tr> \n",low_id,rwy[l]->RWY,rwy[l]->LENGHT, rwy[l]->WIDHT,surface);
 		}
 	}
 return ret;
@@ -474,7 +474,30 @@ class Geo {
 
 
 
+mapping Decimal_To_DMS( float d1,float d2)
+{
+array tmp;
+int D,S,M;
+string X="N";
+string tmp1 =  (string) d1;
+if(tmp1[0..0] == "-") X="S";
+ tmp = replace( tmp1,"-","")/".";
+ D = (int) tmp[0];
+ M = (int) ((d1-D)*60);
+ S = (int) round(((((d1-D)*60))-M)*60);
 
+mapping ret =  (["LAT": (["D":D,"M": M,"S":S, "DMS": sprintf("%d° %d\' %d\" %s ",D,M,S,X)]) ]);
+
+X="E";
+tmp1 =  (string) d2;
+if( tmp1[0..0] == "-") X="W";
+ tmp = replace( tmp1,"-","")/".";
+ D = (int) tmp[0];
+ M = (int) ((d2-D)*60);
+ S = (int) round(((((d2-D)*60))-M)*60);
+ret +=  (["LONG": (["D":D,"M": M,"S":S, "DMS": sprintf("%d° %d\' %d\" %s",D,M,S,X)]) ]);
+return ret;
+}
 
 
 

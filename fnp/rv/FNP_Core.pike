@@ -69,8 +69,13 @@ string FNP_Route(string sess,mapping ini)
 
 Push_Log(sess,sprintf("Processing %s -> %s with %s ",from,to,ac));
 
-if(ini->DEMO == "YES") { from =ini->DEMO_F; to =ini->DEMO_T;}
+//if(ini->DEMO == "YES") { from =ini->DEMO_F; to =ini->DEMO_T;}
+
+	mapping DMS1 = Decimal_To_DMS( (float) m_from->lat, (float) m_from->long);
+	mapping DMS2 = Decimal_To_DMS( (float) m_to->lat, (float) m_to->long);
+
 	mapping output=([]);
+
 
    output["T_SESSION"] 		=	(string)  sess;;
    output["T_INI_NAME"] 	=	(string)  ini->NAME;
@@ -90,6 +95,11 @@ if(ini->DEMO == "YES") { from =ini->DEMO_F; to =ini->DEMO_T;}
 	 output["T_LONG1"] 			=	(string) 	m_from->long;
    output["T_LAT2"] 			= (string)	m_to->lat;
    output["T_LONG2"] 			= (string)	m_to->long;
+	 output["T_LATDMS1"]		=	(string)	DMS1->LAT->DMS;
+	 output["T_LATDMS2"]		=	(string)	DMS2->LAT->DMS;
+	 output["T_LONGDMS1"]		=	(string)	DMS1->LONG->DMS;
+	 output["T_LONGDMS2"]		=	(string)	DMS2->LONG->DMS;
+
 	 output["T_DAID1"] 			= (string)	m_from->id;
    output["T_DAID2"] 			= (string)	m_to->id;
 	 output["T_RWYS1"]			= (string)	Get_Runways_Html((string) m_from->id,rwy);

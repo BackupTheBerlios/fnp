@@ -53,12 +53,15 @@
 <tr><td>&nbsp; </td><td><img width="1" src="/b.gif" height="1"></td> <td>&nbsp; </td><td><img width="1" src="/b.gif" height="1"></td><td>&nbsp; </td></tr>
 <!-- ROW 2 airport info -->
 	<td valign=top width=200 align=center>
-		<b>Runways %ICAO1%</b><hr width=90%>
+		<b> %ICAO1%</b><hr width=90% >
+		<table><tr><td>Latitude:</td><td>%LATDMS1%</td></tr><tr><td>Longitude:</td><td>%LONGDMS1%</td></tr></table>
+		
     <table>		%RWYS1% 		</table>
 	</td>
 	<td bgcolor="#999999"><img width="1" src="/b.gif" height="1"></td>
   <td valign=top width=200 align=center>
-<b>Runways %ICAO2%</b><hr width=90%>
+	<b>%ICAO2%</b><hr width=90%>
+		<table><tr><td>Latitude:</td><td>%LATDMS2%</td></tr><tr><td>Longitude:</td><td>%LONGDMS2%</td></tr></table>
     <table>		%RWYS2% 		</table>
 		</td>
 	<td bgcolor="#999999"><img width="1" src="/b.gif" height="1"></td>
