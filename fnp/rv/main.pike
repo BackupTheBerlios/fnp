@@ -31,22 +31,27 @@ void  handle_request(Protocols.HTTP.Server.Request request)
    }
 
 request->response_and_finish(([ "data": ret, "type":type ]));
-}
 
+//string ip = (string) request->my_fd;
+//write("%O\n",request->my_fd->query_adress());
+
+}
+                        
 string rvsc(mapping query)
 {
  mapping DB = OpenDatabase("iat");
  string from = upper_case(query->from);
  string to = upper_case(query->to);
  string E="OK";
-  if(CheckInputICAO(from) != 1) E = from+" not a valid ICAO id";
-  if(CheckInputICAO(to) != 1)   E =  to+" not a valid ICAO id";
-  if(from == to)E = " departure and destination the same code ";
-  if(!GetICAOdata(from,DB)->name) E =  from+" not a valid ICAO id";
-  if(!GetICAOdata(to,DB)->name) E =  to+" not a valid ICAO id";
+  if(CheckInputICAO(from) != 1) return (string)  from+" not a valid ICAO id";
+  if(CheckInputICAO(to) != 1)   return (string)  to+" not a valid ICAO id";
+  if(from == to)return (string) " departure and destination the same code ";
+  if(!GetICAOdata(from,DB)->name) return (string)  from+" not a valid ICAO id";
+  if(!GetICAOdata(to,DB)->name) return (string)  to+" not a valid ICAO id";
   if(E != "OK") return (string) E;
 
 return router(from,to,DB);
+
 }
 
 
