@@ -53,7 +53,7 @@
 <br><br>
 
 <iframe width="600" height="60" src="http://fnp.berlios.de/version/?version=%VERSION%" frameborder="0" SCROLLING="NO"></iframe>
-     
-    
+
+
 </body>
 </html>
