@@ -157,7 +157,10 @@
 			<td class="TDFieldDesc">WINDSPEED&nbsp;</td><td class="TDFieldDesc"><input class="ICAOField" type="text" name="WEATHER_WS" value ="%WS%" size="3"> kt</td>
 			<td ><img width="3" src="/b.gif" height="1"></td>
 			<td class="TDFieldDesc">WIND DIRECTION&nbsp;</td><td class="TDFieldDesc"><input class="ICAOField" type="text" name="WEATHER_WD" value ="%WD%" size="3"> °</td>
- 		</tr>
+			<td ><img width="3" src="/b.gif" height="1"></td>
+			<td class="TDFieldDesc">ss</td><td class="TDFieldDesc"><input class="ICAOField" type="text" name="ENR_TAS" value ="%WD%" size="3"> °</td>
+		  <td class="TDFieldDesc">ss</td><td class="TDFieldDesc"><input class="ICAOField" type="text" name="ENR_FL" value ="%WD%" size="3"> °</td>
+		</tr>
 	 </table>
 	</td>
  </tr>

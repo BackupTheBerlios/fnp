@@ -21,7 +21,19 @@
 //\  so other people can use them as well. This script is free to use, don't abuse.
 //\//////////////////////////////////////////////////////////////////////////////////
 //\mini
+function nd() {
+	if ( o3_removecounter >= 1 ) { o3_showingsticky = 0 };
+	if ( (ns4) || (ie4) || (ns6) ) {
+		if ( o3_showingsticky == 0 ) {
+			o3_allowmove = 0;
+			if (over != null) hideObject(over);
+		} else {
+			o3_removecounter++;
+		}
+	}
 
+	return true;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////
 // CONSTANTS
@@ -435,7 +447,7 @@ var o3_frame = self;
 var o3_timeout = 0;
 var o3_timerid = 0;
 var o3_allowmove = 0;
-var o3_function = null; 
+var o3_function = null;
 var o3_delay = 0;
 var o3_delayid = 0;
 var o3_hauto = 0;
@@ -670,7 +682,7 @@ function overlib() {
 			if (ar[i] == CLOSESIZE) { o3_closesize = ar[++i]; continue; }
 			if (ar[i] == FRAME) { opt_FRAME(ar[++i]); continue; }
 			if (ar[i] == TIMEOUT) { o3_timeout = ar[++i]; continue; }
-			if (ar[i] == FUNCTION) { udf = 0; if (typeof ar[i+1] != 'number') v = ar[++i]; opt_FUNCTION(v); continue; } 
+			if (ar[i] == FUNCTION) { udf = 0; if (typeof ar[i+1] != 'number') v = ar[++i]; opt_FUNCTION(v); continue; }
 			if (ar[i] == DELAY) { o3_delay = ar[++i]; continue; }
 			if (ar[i] == HAUTO) { o3_hauto = (o3_hauto == 0) ? 1 : 0; continue; }
 			if (ar[i] == VAUTO) { o3_vauto = (o3_vauto == 0) ? 1 : 0; continue; }
@@ -723,7 +735,7 @@ function nd() {
 			o3_removecounter++;
 		}
 	}
-	
+
 	return true;
 }
 

@@ -57,14 +57,16 @@ mapping File_Server_Parsed(string file,string query,string tpl,mapping ini,strin
 		if(onLoad =="") onLoad = l;
 
 			acs += sprintf("<option value=\"%s\">%s (%s)</option>",(string)l,(string)l,(string)Aircrafts[l]->TYPE);
-			tmp = "document.SendToR.AC_REG.value = \""+(string)l+"\";\n";
+			tmp = "\t\t\tdocument.SendToR.AC_REG.value = \""+(string)l+"\";\n";
 			foreach(indices(Aircrafts[l]),string key )
   		{
 
 			tmp += "document.SendToR.AC_"+key+".value = \""+Aircrafts[l][key]+ "\";\n";
 			}
-			acsJS +=  "if(reg == \""+(string)l+"\"){ "+tmp+" }\n";
-			
+			acsJS +=  "if(reg == \""+(string)l+"\"){ "+tmp+"document.SendToR.ENR_TAS.value = \""+Aircrafts[l]->TAS+ "\";\n "+
+								"document.SendToR.ENR_FL.value = \""+Aircrafts[l]->FL+ "\";\n }\n";
+
+
 
 
   	}
@@ -123,7 +125,7 @@ mapping time_now()
  mapping t1=localtime(time());
  ret["time"] = sprintf("%02d:%02d:%02d",t1->hour,t1->min,t1->sec);
  ret["date"] = sprintf("%02d/%02d/%04d",t1->mday,t1->mon+1,t1->year+1900);
- return ret;
+ 	return ret;
 }
 
 
@@ -157,6 +159,19 @@ mapping show_log(string sess)
 	log = "<pre>\n"+log+"</pre><a name=unten>\n";
 	return (["data": log, "type": "text/html"]);
 }
+
+mapping popup(string sess,mapping query)
+{
+	string tpl = Stdio.File(combine_path(ini->HTMLDIR,"misc.tpl"))->read();
+	tpl=replace(tpl,"%tpl%",(string)query->tpl);
+	tpl=replace(tpl,"%hop%",(string)query->hop);
+
+	tpl=replace(tpl,"%session%",(string)sess);
+	return (["data": tpl, "type": "text/html"]);
+}
+
+
+
 
 string Push_Log(string sess,string log)
 {

@@ -80,6 +80,15 @@ void  handle_request(Protocols.HTTP.Server.Request request)
 		ret = (["data" :show_log->data, "type" : show_log->type ]);
 		done =1;
 		}
+
+		if(file[0..6] == "/POPUP_") /* Logfile Process */
+		{
+		string sess = replace(file,"/POPUP_","");
+		mapping popup = popup(sess,query);
+		ret = (["data" :popup->data, "type" : popup->type ]);
+		done =1;
+		}
+
 		if(file[0..5] == "/CALL_") /* Call Process */
 		{
 		string sess = replace(file,"/CALL_","");
@@ -131,7 +140,7 @@ void  handle_request(Protocols.HTTP.Server.Request request)
 
 
 		if(ret->data)  request->response_and_finish(([ "data": ret->data, "type":ret->type, "server": ret->server ]));
-		if(!ret->data) request->response_and_finish(([ "data": "404?"+file, "type":"text/html" ]));
+		if(!ret->data) request->response_and_finish(([ "data": "404?"+file+sprintf("\n%O",request->query), "type":"text/html" ]));
 
 	} /* end access */
 }

@@ -41,7 +41,7 @@ mapping Start_FNP(mapping query,mapping ini)
 mapping Start_FNP_Router(string sess ,mapping ini)
 {
 
-debug ("Ok router process rennt....");
+
 
 return  (["check": "ok", "data": "FERTIG", "type": ini["CT-HTML"] ]);
 
@@ -331,6 +331,7 @@ string ServPlanFilePass(string file,mapping ini)
 string ServPlanFileParse(string file,mapping ini)
 {
 	mapping print_route =([]);
+	mapping session = decode_value(Stdio.FILE(combine_path(ini->SESSIONDIR,replace(file,".fnp","")))->read());
 	mapping output = decode_value(Stdio.FILE(combine_path(ini->SESSIONDIR,file+".out"))->read());
  	mapping route = decode_value(Stdio.FILE(combine_path(ini->SESSIONDIR,file+".route"))->read());
 
@@ -356,7 +357,7 @@ int r_max = sizeof(indices(route)) ;
 	float wca;
 string dist_tmp;
 	route[r_max+1] =([ "hop": sizeof(indices(route))+1,"type":"Airport","ident": output["T_ICAO2"], "lat": output["T_LAT2"],
-									"long": output["T_LONG2"], "desc": "Destination","name":output["T_NAME2"] ]);
+									"long": output["T_LONG2"], "desc": "Destination","name":output["T_NAME2"],"TAS":session->ENR_TAS,"FL":session->ENR_FL ]);
 
 		for(int i=1;i<r_max+2;i++)
 		{
@@ -383,9 +384,9 @@ array time_tmp1 = ({ total_time /60, total_time %60});
 	string total_time_f = sprintf("%O:%O / %O:%O",time_tmp[0],time_tmp[1],time_tmp1[0],time_tmp1[1]);
 
 		if(route[i]->hop != 0) {tmp += "<tr><td>"+(route[i]->hop-1)+
-		"</td><td>"+route[i]->ident+"</td><td>"+dist+
+		"</td><td>"+route[i]->ident+"</td><td>"+dist+"</td><td>"+route[i]->FL+
 		"</td><td>"+(int)tc+"°</td><td>"+(int)wca+
-		"°</td><td>"+ini->VAR+"</td><td>TT</td><td>"+output["T_AC-TAS"]+
+		"°</td><td>"+ini->VAR+"</td><td>TT</td><td>"+route[i]->TAS+
 		"</td><td>"+gs+"</td><td>"+total_time_f+"</td></tr>\n";
 		}
 		}
@@ -416,6 +417,7 @@ string FNP_KLick_Route(string sess,mapping query,mapping ini)
 {
  mapping route =([]);
  mapping output = decode_value(Stdio.FILE(combine_path(ini->SESSIONDIR,sess+".out"))->read());
+ mapping session = decode_value(Stdio.FILE(combine_path(ini->SESSIONDIR,replace(sess,".fnp","")))->read());
  string tpl = Stdio.FILE(ini->HTMLDIR+"/"+ini->KLICKER)->read();
 
  foreach(indices(output),string l )
@@ -436,7 +438,7 @@ string FNP_KLick_Route(string sess,mapping query,mapping ini)
 		int hop = sizeof(indices(route))+1;
 
  		route[1] = ([ "hop": 0,"type":"Airport","ident": output["T_ICAO1"], "lat": output["T_LAT1"],
-									"long": output["T_LONG1"], "desc": "Departure","name":output["T_NAME1"] ]);
+									"long": output["T_LONG1"], "desc": "Departure","name":output["T_NAME1"],"TAS": "", "FL":"" ]);
 
 
 
@@ -451,7 +453,7 @@ string FNP_KLick_Route(string sess,mapping query,mapping ini)
 		{
 		string ident = upper_case(query->dest);
 		route[hop] += ([ "hop": hop,"type":"Airport","ident": ident, "lat": output["Alt_"+ident]->lat,
-										 "long": output["Alt_"+ident]->long, "desc": "","name":DB[ident]->name]);
+										 "long": output["Alt_"+ident]->long, "desc": "","name":DB[ident]->name, "TAS":session->ENR_TAS,"FL":session->ENR_FL ]);
 		}
 
 
@@ -459,7 +461,7 @@ string FNP_KLick_Route(string sess,mapping query,mapping ini)
 		{
 		string ident = upper_case(query->dest);
 		route[hop] += ([ "hop": hop,"type":"NavID","ident": ident, "lat": output["Nav_"+ident]->lat,
-										 "long": output["Nav_"+ident]->long, "desc": "","name":output["Nav_"+ident]->name]);
+										 "long": output["Nav_"+ident]->long, "desc": "","name":output["Nav_"+ident]->name, "TAS":session->ENR_TAS,"FL":session->ENR_FL]);
 		}
 
 		if(query->dest && query->type == "wpt" && sizeof(query->dest) == 5 && last_ident != query->dest)
@@ -467,23 +469,27 @@ string FNP_KLick_Route(string sess,mapping query,mapping ini)
 
 		string ident = upper_case(query->dest);
 		route[hop] += ([ "hop": hop,"type":"WayPoint","ident": ident, "lat": output["Wpt_"+ident]->lat,
-										 "long": output["Wpt_"+ident]->long, "desc":output["Wpt_"+ident]->desc,"name":ident]);
+										 "long": output["Wpt_"+ident]->long, "desc":output["Wpt_"+ident]->desc,"name":ident, "TAS":session->ENR_TAS,"FL":session->ENR_FL]);
 		}
 
 		if(query->dest && query->type == "del" && sizeof(query->dest) !=0 && last_ident != query->dest && query->dest != 1 && query->dest != last_ident)
 		{
 		 route = FNP_KLick_Route_Delete_Hop(route,(string)query->dest);
 		}
+		if(query->update  && sizeof(query->hop) !=0 && sizeof(query->value) !=0)
+		{
+		 route = FNP_KLick_Route_Update(route,query);
 
+		 	if(query->hop ==  (string) hop &&  query->update == "fl") session["ENR_FL"] =  query->value;
+			if(query->hop ==  (string) hop &&  query->update == "tas") session["ENR_TAS"] = query->value;
+		 Stdio.write_file(combine_path(ini->SESSIONDIR,replace(sess,".fnp","")),encode_value_canonic(session));
+		}
 
-
-
-Stdio.write_file(combine_path(ini->SESSIONDIR,sess+".route"),encode_value_canonic(route));
-
+		Stdio.write_file(combine_path(ini->SESSIONDIR,sess+".route"),encode_value_canonic(route));
 
 		int last_insert = sizeof(indices(route))+1;
 		route[last_insert] = ([ "hop": sizeof(indices(route))+1,"type":"Airport","ident": output["T_ICAO2"], "lat": output["T_LAT2"],
-									"long": output["T_LONG2"], "desc": "Destination","name":output["T_NAME2"] ]);
+									"long": output["T_LONG2"], "desc": "Destination","name":output["T_NAME2"],"TAS":session->ENR_TAS,"FL":session->ENR_FL ]);
 
 
 
@@ -521,18 +527,25 @@ Stdio.write_file(combine_path(ini->SESSIONDIR,sess+".route"),encode_value_canoni
 		 string this_id= (string)route[i]->ident;
 		 string this_name = (string)route[i]->name;
 		 string this_desc = (string) route[i]->desc;
+		 string this_fl = (string) route[i]->FL;
+		 string this_tas = (string) route[i]->TAS;
+
+
 
 		 string this_dist = (string) sprintf("%s %s",(string) dist_nm,dist_text);
 		 if(dist_nm ==0) this_dist = "&nbsp;-";
 		 string this_link = "&nbsp;";
 
-	   if(i != sizeof(indices(route))  && i != 1) this_link = (string) sprintf("<a href=\"javascript:DEL(\'%d\');\">Delete</a>",i);
+	   if(i != sizeof(indices(route))  && i != 1) this_link = (string) sprintf("<a href=\"javascript:DEL(\'%d\');\" onmouseover=\"return DELOver();\" onmouseout=\"return nd();\">Delete</a>",i);
 
   	 if(this_id == this_name) this_name ="";
 		 if(this_id == this_desc) this_desc ="";
 
-		route_replace += sprintf("<tr><td>%s&nbsp;</td><td>%s&nbsp;</td><td>%s&nbsp;</td><td>%s&nbsp;</td><td>%s&nbsp;</td><td>%s&nbsp;</td><td>%s</td></tr>\n",
-	                          this_hop,this_type,this_id,this_name,this_desc,this_dist,this_link );
+		route_replace += "<tr><td>"+this_hop+"&nbsp;</td><td>"+this_type+"&nbsp;</td><td>"+this_id+"&nbsp;</td><td>"+this_name+"&nbsp;</td><td>"+
+											this_desc+"&nbsp;</td><td>"+this_dist+"&nbsp;</td>"+
+											"<td><a href=\"javascript:FL(\'"+this_hop+"\')\" onmouseover=\"return FLOver();\" onmouseout=\"return nd();\">"+this_fl+"</a>&nbsp;</td>"+
+											"<td><a href=\"javascript:TAS(\'"+this_hop+"\')\" onmouseover=\"return TASOver();\" onmouseout=\"return nd();\">"+this_tas+"</a>&nbsp;</td><td>"+this_link+"</td></tr>\n";
+
 
 	}
 
@@ -570,6 +583,8 @@ mapping FNP_KLick_Route_Calc_Dist(float lat1,float long1,float lat2,float long2,
 
 mapping FNP_KLick_Route_Delete_Hop(mapping x,string key)
 {
+//m_delete(ret,key);
+
 	mapping ret =([]);
 	int i =1;
 	for(int p=1;p<sizeof(indices(x));p++)
@@ -584,7 +599,9 @@ mapping FNP_KLick_Route_Delete_Hop(mapping x,string key)
       "lat": 		x[p]->lat,
       "long": 	x[p]->long,
       "name": 	x[p]->name,
-      "type": 	x[p]->type
+      "type": 	x[p]->type,
+			"FL": 		x[p]->FL,
+			"TAS": 		x[p]->TAS
 			]);
 		i++;
 		}
@@ -592,6 +609,49 @@ mapping FNP_KLick_Route_Delete_Hop(mapping x,string key)
 	}
 return ret;
 }
+
+mapping FNP_KLick_Route_Update(mapping x,mapping query)
+{
+
+	mapping ret =([]);
+	int i =1;
+	foreach(indices(x), string p)
+	{
+	if((string) p != (string) query->hop)
+	{
+			 ret[p] = ([
+      "desc": 	x[p]->desc,
+      "hop": 		x[p]->hop,
+      "ident": 	x[p]->ident,
+      "lat": 		x[p]->lat,
+      "long": 	x[p]->long,
+      "name": 	x[p]->name,
+      "type": 	x[p]->type,
+			"FL": 		x[p]->FL,
+			"TAS": 		x[p]->TAS
+			]);
+
+		} else {
+		string fl=x[p]->FL;
+		string tas = x[p]->TAS;
+		if(query->update == "fl") fl = query->value;
+		if(query->update == "tas") tas = query->value;
+	 ret[p] = ([
+      "desc": 	x[p]->desc,
+      "hop": 		x[p]->hop,
+      "ident": 	x[p]->ident,
+      "lat": 		x[p]->lat,
+      "long": 	x[p]->long,
+      "name": 	x[p]->name,
+      "type": 	x[p]->type,
+			"FL": 		fl,
+			"TAS": 		tas
+			]);
+	}
+	}
+return ret;
+}
+
 
  string FNP_KLick_Route_Map(string file,mapping ini )
 {

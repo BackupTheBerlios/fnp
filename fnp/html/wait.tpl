@@ -3,7 +3,6 @@
 <title>FLIGHT NAVIGATION</title>
 
   <style type="text/css">
-
   body { font-family: arial, helvetica, sans-serif; font-size: 15px;
 </style>
 <script language="javascript"  type="text/javascript">

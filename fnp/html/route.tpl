@@ -41,7 +41,7 @@
 	<td bgcolor="#999999"><img width="1" src="/b.gif" height="1"></td>
   <td valign=top width=200 align=center>
   	<center><b>EN-ROUTE DISTANCE:</b></center><hr width=90%>
-    <table><tr><td>%ENDISTNM%</td><td> nautical miles</td></tr><tr><td>%ERDISTMI%</td><td> Land miles</td></tr><tr><td>%ERDISTKM%</td><td> kilometers</td> </tr>    </table>
+    <table><tr><td>%ENDISTNM%</td><td> nautical miles</td></tr><tr><td>%ERDISTMI%</td><td> Land miles</td></tr><tr><td>%ERDISTKM%</td><td> kilometers</td></tr></table>
 	</td>
 	<td bgcolor="#999999"><img width="1" src="/b.gif" height="1"></td>
  	<td valign=top width=200 align=center>
@@ -79,7 +79,7 @@
 	<br><br><br>TEST: ( Wind %INI_WS%kt %INI_WD%° )
 
 	<table border=1 cellpadding="2" cellspacing="2">
-	<tr><td>#</td><td>IDENT</td><td>DIST</td><td>TT</td><td>WCA</td><td>VAR</td><td>MT</td><td>TAS</td><td>GS</td><td>int TIME</td></tr>
+	<tr><td>#</td><td>IDENT</td><td>DIST</td><td>FL</td><td>TT</td><td>WCA</td><td>VAR</td><td>MT</td><td>TAS</td><td>GS</td><td>int TIME</td></tr>
 	%ROUTE%
 	<tr><td></td><td></td><td>%ENDISTNM%</td><td></td><td></td><td></td><td></td><td></td><td></td><td>%ERTIME%</td></tr>
 	</table>
